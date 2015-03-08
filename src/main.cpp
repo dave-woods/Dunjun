@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <cmath>
 
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
@@ -17,18 +18,21 @@ void glfwHints()
 
 int main(int argc, char** argv)
 {
+	/*Create the window*/
 	GLFWwindow* window;
 
 	/*Initialise the library*/
 	if (!glfwInit())
 		return EXIT_FAILURE;
 	
+	/*Get the GLFW version*/
 	glfwHints();
 
 	/*Create a windowed mode window and its OpenGL context*/
 	window = glfwCreateWindow(g_windowWidth, g_windowHeight, windowTitle, nullptr, nullptr);
 	if (!window)
 	{
+		/*Window creation failure*/
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
@@ -38,17 +42,24 @@ int main(int argc, char** argv)
 
 	//if (!glewInit())
 		//return EXIT_FAILURE;
+	
+	/*Initialise the library*/
 	glewInit();
 
+	/*Vertices of the onscreen triangle*/
 	float vertices[] = {
 		0.0f, 0.5f, //first vertex
 		-0.5f, -0.5f, //second
 		0.5f, -0.5f //third
 	};
 
-	GLuint vbo; //vertex buffer object
+	/*VertexBufferObject*/
+	GLuint vbo;
+	/*Generate the buffer*/
 	glGenBuffers(1, &vbo);
+	/*Bind the VBO to the buffer*/
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	/*Pass the vertices to the buffer*/
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	/*
 		GL_STATIC_DRAW // drawn once
@@ -59,19 +70,21 @@ int main(int argc, char** argv)
 	const char* vertexShaderText = {
 		"#version 120\n"
 		"\n"
-		"attribute vec2 position;"
+		"attribute vec2 vertPosition;"
 		"void main()"
 		"{"
-		"    gl_Position = vec4(position, 0.0, 1.0);"
+		"    gl_Position = vec4(vertPosition, 0.0, 1.0);"
 		"}"
 	};
 
 	const char* fragmentShaderText = {
 		"#version 120\n"
 		"\n"
+		"uniform vec3 uniColor;"
+		""
 		"void main()"
 		"{"
-		"    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);"
+		"    gl_FragColor = vec4(uniColor, 1.0);"
 		"}"
 	};
 
@@ -87,12 +100,13 @@ int main(int argc, char** argv)
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 
-	glBindAttribLocation(shaderProgram, 0, "position");
+	glBindAttribLocation(shaderProgram, 0, "vertPosition");
 
 	glLinkProgram(shaderProgram);
 
 	glUseProgram(shaderProgram);
 
+	GLint uniColor = glGetUniformLocation(shaderProgram, "uniColor");
 
 	bool fullscreen = false;
 	bool running = true;
@@ -105,6 +119,9 @@ int main(int argc, char** argv)
 
 		/*Render here*/
 		{
+			float time = glfwGetTime();
+			glUniform3f(uniColor, 0.0f, 0.0f, 0.5f * (1.0f + sin(3.0f * time)));
+
 			glEnableVertexAttribArray(0);
 
 			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
@@ -132,6 +149,10 @@ int main(int argc, char** argv)
 		if (glfwWindowShouldClose(window) || glfwGetKey(window, GLFW_KEY_ESCAPE))
 			running = false;
 
+
+
+		// Fullscreen DISABLED due to crashes
+		/*
 		if (glfwGetKey(window, GLFW_KEY_F11))
 		{
 			fullscreen = !fullscreen;
@@ -140,9 +161,9 @@ int main(int argc, char** argv)
 			glfwHints();
 			if (fullscreen)
 			{
-				/*Get number of modes*/
+				/*Get number of modes
 				int count;
-				/*Getting the monitors width and height*/
+				/*Getting the monitors width and height
 				const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
 
 				newWindow = glfwCreateWindow(modes[count - 1].width, modes[count - 1].height, windowTitle, glfwGetPrimaryMonitor(), window);
@@ -155,6 +176,7 @@ int main(int argc, char** argv)
 			window = newWindow;
 			glfwMakeContextCurrent(window);
 		}
+		*/
 	}
 
 	glfwDestroyWindow(window);
