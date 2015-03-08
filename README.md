@@ -17,3 +17,4 @@ Progress To Date
 * Enabled drawing triangles
 * Temporarily included dynamic colour changing (08/03/15 17:16)
 * Added shader program and rendered rectangle in colour
+* Added textures and image loading
