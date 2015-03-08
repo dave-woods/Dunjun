@@ -1,4 +1,5 @@
 Dunjun - Read Me
+----------------
 ****************
 
 A game developed in C++ in order to increase knowledge of the language and practise and learn techniques used in game development.
