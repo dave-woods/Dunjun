@@ -71,10 +71,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Dunjun\ShaderProgram.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Dunjun\ShaderProgram.hpp" />
     <ClInclude Include="include\Dunjun\Common.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="data\shaders\default.frag.glsl" />
+    <None Include="data\shaders\default.vert.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

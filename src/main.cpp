@@ -1,16 +1,19 @@
 #include <Dunjun/Common.hpp>
+#include <Dunjun/ShaderProgram.hpp>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <fstream>
 
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
 GLOBAL const char* windowTitle = "Dunjun v0.0.1";
 
-void glfwHints()
+INTERNAL void glfwHints()
 {
 	glfwWindowHint(GLFW_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_VERSION_MINOR, 1);
@@ -46,11 +49,16 @@ int main(int argc, char** argv)
 	/*Initialise the library*/
 	glewInit();
 
-	/*Vertices of the onscreen triangle*/
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	/*Vertices and colours of the onscreen triangle*/
 	float vertices[] = {
-		0.0f, 0.5f, //first vertex
-		-0.5f, -0.5f, //second
-		0.5f, -0.5f //third
+	//	    x      y     r     g     b
+		+0.5f, +0.5f, 1.0f, 1.0f, 1.0f, // vertex 0
+		-0.5f, +0.5f, 0.0f, 0.0f, 1.0f, // vertex 1
+		+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // vertex 2
+		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f // vertex 3
 	};
 
 	/*VertexBufferObject*/
@@ -67,77 +75,38 @@ int main(int argc, char** argv)
 		GL_STREAM_DRAW // redrawn very regularly
 	*/
 
-	const char* vertexShaderText = {
-		"#version 120\n"
-		"\n"
-		"attribute vec2 vertPosition;"
-		"void main()"
-		"{"
-		"    gl_Position = vec4(vertPosition, 0.0, 1.0);"
-		"}"
-	};
+	Dunjun::ShaderProgram shaderProgram;
+	shaderProgram.attachShaderFromFile(Dunjun::ShaderType::Vertex, "data/shaders/default.vert.glsl");
+	shaderProgram.attachShaderFromFile(Dunjun::ShaderType::Fragment, "data/shaders/default.frag.glsl");
 
-	const char* fragmentShaderText = {
-		"#version 120\n"
-		"\n"
-		"uniform vec3 uniColor;"
-		""
-		"void main()"
-		"{"
-		"    gl_FragColor = vec4(uniColor, 1.0);"
-		"}"
-	};
+	shaderProgram.bindAttribLocation(0, "vertPosition");
+	shaderProgram.bindAttribLocation(1, "vertColor");
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderText, nullptr);
-	glCompileShader(vertexShader);
-
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderText, nullptr);
-	glCompileShader(fragmentShader);
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-
-	glBindAttribLocation(shaderProgram, 0, "vertPosition");
-
-	glLinkProgram(shaderProgram);
-
-	glUseProgram(shaderProgram);
-
-	GLint uniColor = glGetUniformLocation(shaderProgram, "uniColor");
+	shaderProgram.link();
+	shaderProgram.use();
 
 	bool fullscreen = false;
 	bool running = true;
 	/*Loop until the user closes the window*/
 	while (running)
 	{
-		/*Default pixel value*/
+		/*Default pixel value (background colour)*/
 		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		/*Render here*/
 		{
-			float time = glfwGetTime();
-			glUniform3f(uniColor, 0.0f, 0.0f, 0.5f * (1.0f + sin(3.0f * time)));
+			glEnableVertexAttribArray(0); //vertPosition
+			glEnableVertexAttribArray(1); //vertColor
 
-			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (const GLvoid*)(2 * sizeof(float)));
 
-			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-			glDrawArrays(GL_TRIANGLES, 0, 3);
-
-			glDisableVertexAttribArray(0);
-
-
-
-
+			glDisableVertexAttribArray(0); //vertPosition
+			glDisableVertexAttribArray(0); //vertColor
 		}
-
-
-
-
 
 		/*Swap front and back buffers*/
 		glfwSwapBuffers(window);
