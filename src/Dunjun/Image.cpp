@@ -16,7 +16,7 @@ namespace Dunjun
 	{
 
 	}
-	Image::Image(UInt32 width, UInt32 height, Format format, const UInt8* pixels)
+	Image::Image(u32 width, u32 height, Format format, const u8* pixels)
 		: m_format((Format)0)
 		, m_width(0)
 		, m_height(0)
@@ -46,7 +46,7 @@ namespace Dunjun
 	bool Image::loadFromFile(const char* filename)
 	{
 		int width, height, format;
-		UInt8* pixels = stbi_load(filename, &width, &height, &format, 0);
+		u8* pixels = stbi_load(filename, &width, &height, &format, 0);
 
 		if (!pixels)
 		{
@@ -55,14 +55,14 @@ namespace Dunjun
 		}
 
 		loadFromMemory(width, height, (Format)format, pixels);
-
+		
 		stbi_image_free(pixels);
 
 		if (m_pixels)
 			return true;
 		return false;
 	}
-	bool Image::loadFromMemory(UInt32 width, UInt32 height, Format format, const UInt8* pixels)
+	bool Image::loadFromMemory(u32 width, u32 height, Format format, const u8* pixels)
 	{
 		if (width == 0)
 		{
@@ -84,43 +84,43 @@ namespace Dunjun
 		m_height = height;
 		m_format = format;
 
-		Size imageSize = width * height * format;
-
+		std::size_t imageSize = width * height * format;
+		
 		if (m_pixels)
 			delete[] m_pixels;
 
-		m_pixels = new UInt8[imageSize];
-
+		m_pixels = new u8[imageSize];
+		
 		if (pixels != nullptr)
 			std::memcpy(m_pixels, pixels, imageSize);
-
+		
 		return true;
 	}
 
-	UInt8* Image::getPixel(UInt32 column, UInt32 row) const
+	u8* Image::getPixel(u32 column, u32 row) const
 	{
 		if (column >= m_width || row >= m_height)
 			return nullptr;
 		return m_pixels + (row * m_width + column) * m_format;
 	}
-	void Image::setPixel(UInt32 column, UInt32 row, const UInt32* pixel)
+	void Image::setPixel(u32 column, u32 row, const u32* pixel)
 	{
 		if (column >= m_width || row >= m_height)
 			return;
-		UInt8* p = getPixel(column, row);
+		u8* p = getPixel(column, row);
 		std::memcpy(p, pixel, m_format);
 	}
 
 	void Image::flipVertically()
 	{
-		Size pitch = m_width * m_format;
-		UInt32 halfRows = m_height / 2;
-		UInt8* rowBuffer = new UInt8[pitch];
+		std::size_t pitch = m_width * m_format;
+		u32 halfRows = m_height / 2;
+		u8* rowBuffer = new u8[pitch];
 
-		for (UInt32 i = 0; i < halfRows; i++)
+		for (u32 i = 0; i < halfRows; i++)
 		{
-			UInt8* row = m_pixels + (i * m_width) * m_format;
-			UInt8* oppositeRow = m_pixels + ((m_height - i - 1) * m_width) * m_format;
+			u8* row = m_pixels + (i * m_width) * m_format;
+			u8* oppositeRow = m_pixels + ((m_height - i - 1) * m_width) * m_format;
 			std::memcpy(rowBuffer, row, pitch);
 			std::memcpy(row, oppositeRow, pitch);
 			std::memcpy(oppositeRow, rowBuffer, pitch);
@@ -136,7 +136,7 @@ namespace Dunjun
 		return;
 	}
 
-	void Image::copyRectFromImage(const Image& src, UInt32 srcCol, UInt32 srcRow, UInt32 destCol, UInt32 destRow, UInt32 width, UInt32 height)
+	void Image::copyRectFromImage(const Image& src, u32 srcCol, u32 srcRow, u32 destCol, u32 destRow, u32 width, u32 height)
 	{
 		return;
 	}

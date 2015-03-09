@@ -1,14 +1,18 @@
 #ifndef DUNJUN_COMMON_HPP
 #define DUNJUN_COMMON_HPP
 
-namespace Dunjun
-{
-using Float32 = float;
-using Float64 = double;
+#include <Dunjun/Types.hpp>
+
+#include <stdexcept>
+#include <iostream>
+
 
 #define GLOBAL static
 #define INTERNAL static
 #define LOCAL_INTERNAL static
+
+namespace Dunjun
+{
 } // namespace Dunjun
 
 #endif

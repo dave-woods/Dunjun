@@ -1,11 +1,13 @@
+#include <Dunjun/OpenGL.hpp>
 #include <Dunjun/Common.hpp>
 #include <Dunjun/ShaderProgram.hpp>
 #include <Dunjun/Image.hpp>
+#include <Dunjun/Texture.hpp>
 
-#include <GL/glew.h>
+#include <Dunjun/OpenGL.hpp>
+
 #include <GLFW/glfw3.h>
 
-#include <iostream>
 #include <cmath>
 #include <string>
 #include <fstream>
@@ -56,10 +58,10 @@ int main(int argc, char** argv)
 	/*Vertices(x, y), colours(r, g, b), texture coordinates (s, t) of the onscreen triangle(s)*/
 	float vertices[] = {
 	//	    x      y     r     g     b     s     t
-		+0.5f, +0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // vertex 0
-		-0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // vertex 1
-		+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // vertex 2
-		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // vertex 3
+		+0.5f, +0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // vertex 0
+		-0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // vertex 1
+		+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // vertex 2
+		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // vertex 3
 	};
 
 	/*VertexBufferObject*/
@@ -82,27 +84,10 @@ int main(int argc, char** argv)
 	shaderProgram.link();
 	shaderProgram.use();
 
-	GLuint tex;
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearest = pixelated
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // linear = blurred
+	Dunjun::Texture tex;
+	tex.loadFromFile("data/textures/batman.jpg");
+	tex.bind(0);
 
-	Dunjun::Image image;
-	image.loadFromFile("data/textures/batman.jpg");
-
-
-	//Checkerboard pattern
-	float pixels[] = {
-		0, 0, 1, 1, 0, 0,
-		0, 1, 0, 1, 1, 0,
-	};
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width(), image.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, image.pixelPtr());
-
-	glActiveTexture(GL_TEXTURE0);
 	shaderProgram.setUniform("uniTex", 0);
 
 
