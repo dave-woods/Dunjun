@@ -3,12 +3,12 @@
 
 namespace Dunjun
 {
-	using Float32 = float;
-	using Float64 = double;
+using Float32 = float;
+using Float64 = double;
 
-	#define GLOBAL static
-	#define INTERNAL static
-	#define LOCAL_INTERNAL static
+#define GLOBAL static
+#define INTERNAL static
+#define LOCAL_INTERNAL static
 } // namespace Dunjun
 
 #endif

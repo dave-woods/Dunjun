@@ -1,10 +1,9 @@
 #include <Dunjun/Common.hpp>
 #include <Dunjun/ShaderProgram.hpp>
+#include <Dunjun/Image.hpp>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
 
 #include <iostream>
 #include <cmath>
@@ -91,10 +90,9 @@ int main(int argc, char** argv)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearest = pixelated
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // linear = blurred
 
+	Dunjun::Image image;
+	image.loadFromFile("data/textures/batman.jpg");
 
-	unsigned char* image;
-	int width, height, comp;
-	image = stbi_load("data/textures/batman.jpg", &width, &height, &comp, 0);
 
 	//Checkerboard pattern
 	float pixels[] = {
@@ -102,12 +100,10 @@ int main(int argc, char** argv)
 		0, 1, 0, 1, 1, 0,
 	};
 	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.width(), image.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, image.pixelPtr());
 
 	glActiveTexture(GL_TEXTURE0);
 	shaderProgram.setUniform("uniTex", 0);
-
-	stbi_image_free(image);
 
 
 
