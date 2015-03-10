@@ -3,8 +3,9 @@
 #include <Dunjun/ShaderProgram.hpp>
 #include <Dunjun/Image.hpp>
 #include <Dunjun/Texture.hpp>
-
-#include <Dunjun/OpenGL.hpp>
+#include <Dunjun/Clock.hpp>
+#include <Dunjun/TickCounter.hpp>
+#include <Dunjun/Math.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -13,50 +14,6 @@
 #include <fstream>
 #include <sstream>
 
-class Clock
-{
-public:
-	inline double getElapsedTime() const { return (glfwGetTime() - m_startTime); }
-	
-	double restart()
-	{
-		double now = glfwGetTime();
-		double elapsed = now - m_startTime;
-		m_startTime = now;
-
-		return elapsed;
-	}
-private:
-	double m_startTime = glfwGetTime();
-};
-
-class TickCounter
-{
-public:
-	bool update(double frequency)
-	{
-		bool reset = false;
-		if (m_clock.getElapsedTime() >= frequency)
-		{
-			m_tickRate = m_tick / frequency;
-			m_tick = 0;
-			reset = true;
-			m_clock.restart();
-		}
-
-		m_tick++;
-
-		return reset;
-	}
-
-	inline std::size_t getTickRate() const { return m_tickRate; }
-
-private:
-	std::size_t m_tick = 0;
-	std::size_t m_tickRate = 0;
-	Clock m_clock;
-
-};
 
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
@@ -122,6 +79,13 @@ INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
 	*/
 }
 
+struct Vertex
+{
+	Dunjun::Vector2 position;
+	Dunjun::Vector3 color;
+	Dunjun::Vector2 texCoord;
+};
+
 int main(int argc, char** argv)
 {
 	/*Create the window*/
@@ -145,6 +109,7 @@ int main(int argc, char** argv)
 
 	/*Make the window's context current*/
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 
 	/*Initialise the library*/
 	glewInit();
@@ -153,12 +118,19 @@ int main(int argc, char** argv)
 	glCullFace(GL_BACK);
 
 	/*Vertices(x, y), colours(r, g, b), texture coordinates (s, t) of the onscreen triangle(s)*/
-	float vertices[] = {
+	/*float vertices[] = {
 	//	    x      y     r     g     b     s     t
 		+0.5f, +0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // vertex 0
 		-0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // vertex 1
 		+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // vertex 2
 		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // vertex 3
+	};*/
+	Vertex vertices[] = {
+		//	    x      y         r     g     b         s     t
+		{ { +0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } }, // vertex 0
+		{ { -0.5f, +0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // vertex 1
+		{ { +0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f } }, // vertex 2
+		{ { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } }, // vertex 3
 	};
 
 	/*VertexBufferObject*/
@@ -190,7 +162,10 @@ int main(int argc, char** argv)
 	tex.bind(0);
 	shaderProgram.setUniform("uniTex", 0);
 
-	TickCounter tc;
+	std::stringstream titleStream;
+
+	Dunjun::TickCounter tc;
+	Dunjun::Clock frameClock;
 
 	bool fullscreen = false;
 	bool running = true;
@@ -206,10 +181,11 @@ int main(int argc, char** argv)
 
 		if (tc.update(0.5))
 		{
-			std::cout << tc.getTickRate() << std::endl;
-			std::stringstream ss;
-			ss << windowTitle << " - " << 1000.0 / tc.getTickRate() << " ms";
-			glfwSetWindowTitle(window, ss.str().c_str());
+			//std::cout << tc.getTickRate() << std::endl; //Framerate to console
+			titleStream.str("");
+			titleStream.clear();
+			titleStream << windowTitle << " - " << 1000.0 / tc.getTickRate() << " ms";
+			glfwSetWindowTitle(window, titleStream.str().c_str());
 		}
 
 		render();
@@ -220,6 +196,10 @@ int main(int argc, char** argv)
 		glfwPollEvents();
 
 		handleInput(window, &running, &fullscreen);
+
+		while (frameClock.getElapsedTime() < 1.0 / 240.0)
+			;
+		frameClock.restart();
 	}
 
 	glfwDestroyWindow(window);

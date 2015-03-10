@@ -84,7 +84,7 @@ namespace Dunjun
 		m_height = height;
 		m_format = format;
 
-		std::size_t imageSize = width * height * format;
+		usize imageSize = width * height * format;
 		
 		if (m_pixels)
 			delete[] m_pixels;
@@ -113,7 +113,7 @@ namespace Dunjun
 
 	void Image::flipVertically()
 	{
-		std::size_t pitch = m_width * m_format;
+		usize pitch = m_width * m_format;
 		u32 halfRows = m_height / 2;
 		u8* rowBuffer = new u8[pitch];
 
