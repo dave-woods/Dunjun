@@ -6,6 +6,7 @@
 #include <Dunjun/Clock.hpp>
 #include <Dunjun/TickCounter.hpp>
 #include <Dunjun/Math.hpp>
+#include <Dunjun/Color.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -18,6 +19,13 @@
 GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
 GLOBAL const char* windowTitle = "Dunjun v0.0.1";
+
+struct Vertex
+{
+	Dunjun::Vector2 position;
+	Dunjun::Color color;
+	Dunjun::Vector2 texCoord;
+};
 
 INTERNAL void glfwHints()
 {
@@ -35,9 +43,9 @@ INTERNAL void render()
 	glEnableVertexAttribArray(1); //vertColor
 	glEnableVertexAttribArray(2); //vertTexCoord
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const GLvoid*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const GLvoid*)(2 * sizeof(float)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (const GLvoid*)(5 * sizeof(float)));
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2) + sizeof(Dunjun::Color)));
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -79,13 +87,6 @@ INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
 	*/
 }
 
-struct Vertex
-{
-	Dunjun::Vector2 position;
-	Dunjun::Vector3 color;
-	Dunjun::Vector2 texCoord;
-};
-
 int main(int argc, char** argv)
 {
 	/*Create the window*/
@@ -126,11 +127,11 @@ int main(int argc, char** argv)
 		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // vertex 3
 	};*/
 	Vertex vertices[] = {
-		//	    x      y         r     g     b         s     t
-		{ { +0.5f, +0.5f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f } }, // vertex 0
-		{ { -0.5f, +0.5f }, { 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } }, // vertex 1
-		{ { +0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 1.0f, 1.0f } }, // vertex 2
-		{ { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f } }, // vertex 3
+		//	    x      y         r   g    b    a         s     t
+		{ { +0.5f, +0.5f }, { 255, 255, 255, 255 }, { 1.0f, 0.0f } }, // vertex 0
+		{ { -0.5f, +0.5f }, { 000, 000, 255, 255 }, { 0.0f, 0.0f } }, // vertex 1
+		{ { +0.5f, -0.5f }, { 000, 255, 000, 255 }, { 1.0f, 1.0f } }, // vertex 2
+		{ { -0.5f, -0.5f }, { 255, 000, 000, 255 }, { 0.0f, 1.0f } }, // vertex 3
 	};
 
 	/*VertexBufferObject*/

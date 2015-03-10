@@ -2,6 +2,10 @@
 #define DUNJUN_MATH_VECTOR4_HPP
 
 #include <Dunjun/Types.hpp>
+#include <Dunjun/Math/Vector2.hpp>
+#include <Dunjun/Math/Vector3.hpp>
+
+#include <cmath>
 
 namespace Dunjun
 {
@@ -40,8 +44,86 @@ namespace Dunjun
 
 		}
 
+		explicit Vector4(const Vector2& other, f32 z, f32 w)
+			: Vector4(other.x, other.y, z, w)
+		{
+
+		}
+
+		explicit Vector4(const Vector2& xy, const Vector2& zw)
+			: Vector4(xy.x, xy.y, zw.x, zw.y)
+		{
+
+		}
+
+		explicit Vector4(const Vector3& other, f32 w)
+			: Vector4(other.x, other.y, other.z, w)
+		{
+
+		}
+
 		f32& operator[](usize index) { return data[index]; }
 		const f32& operator[](usize index) const { return data[index]; }
+
+		Vector4 operator+(const Vector4& other) const
+		{
+			return Vector4(x + other.x, y + other.y, z + other.z, w + other.w);
+		}
+
+		Vector4 operator-(const Vector4& other) const
+		{
+			return Vector4(x - other.x, y - other.y, z - other.z, w - other.w);
+		}
+
+		Vector4 operator*(f32 scalar) const
+		{
+			return Vector4(scalar * x, scalar * y, scalar * z, scalar * w);
+		}
+
+		Vector4 operator/(f32 scalar) const
+		{
+			return Vector4(x / scalar, y / scalar, z / scalar, w / scalar);
+		}
+
+		Vector4& operator+=(const Vector4& other)
+		{
+			x += other.x;
+			y += other.y;
+			z += other.z;
+			w += other.w;
+
+			return *this;
+		}
+
+		Vector4& operator-=(const Vector4& other)
+		{
+			x -= other.x;
+			y -= other.y;
+			z -= other.z;
+			w -= other.w;
+
+			return *this;
+		}
+
+		Vector4& operator*=(f32 scalar)
+		{
+			x *= scalar;
+			y *= scalar;
+			z *= scalar;
+			w *= scalar;
+
+			return *this;
+		}
+
+		Vector4& operator/=(f32 scalar)
+		{
+			x /= scalar;
+			y /= scalar;
+			z /= scalar;
+			w /= scalar;
+
+			return *this;
+		}
 
 		union
 		{
@@ -60,6 +142,16 @@ namespace Dunjun
 			};
 		};
 	};
+
+	inline Vector4 operator*(f32 scalar, const Vector4& vector) { return vector * scalar; }
+
+	inline f32 dot(const Vector4& a, const Vector4& b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
+
+	inline f32 length(const Vector4& a) { return std::sqrtf(dot(a, a)); }
+
+	inline f32 lengthSquared(const Vector4& a) { return lengthSquared(a); }
+
+	inline Vector4 normalized(const Vector4& a) { return a * (1.0 / length(a)); }
 } //namespace Dunjun
 
 

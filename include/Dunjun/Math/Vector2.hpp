@@ -2,6 +2,7 @@
 #define DUNJUN_MATH_VECTOR2_HPP
 
 #include <Dunjun/Types.hpp>
+
 #include <cmath>
 
 namespace Dunjun
