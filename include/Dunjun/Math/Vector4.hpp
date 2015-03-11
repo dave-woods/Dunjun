@@ -57,6 +57,8 @@ namespace Dunjun
 
 		}
 
+		Vector4(const Vector4& other) = default;
+
 		explicit Vector4(const Vector3& other, f32 w)
 			: Vector4(other.x, other.y, other.z, w)
 		{

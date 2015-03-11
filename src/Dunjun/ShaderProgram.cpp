@@ -25,13 +25,9 @@ namespace Dunjun
 				output.append(line + "\n");
 			}
 		}
-
-
 		file.close();
 		return output;
 	}
-
-
 
 	ShaderProgram::ShaderProgram()
 		: m_object(0)
@@ -180,42 +176,42 @@ namespace Dunjun
 	}
 
 
-	void ShaderProgram::setUniform(const GLchar* name, float x)
+	void ShaderProgram::setUniform(const GLchar* name, f32 x)
 	{
 		if (!isInUse())
 			use();
 		glUniform1f(getUniformLocation(name), x);
 	}
 
-	void ShaderProgram::setUniform(const GLchar* name, float x, float y)
+	void ShaderProgram::setUniform(const GLchar* name, f32 x, f32 y)
 	{
 		if (!isInUse())
 			use();
 		glUniform2f(getUniformLocation(name), x, y);
 	}
 
-	void ShaderProgram::setUniform(const GLchar* name, float x, float y, float z)
+	void ShaderProgram::setUniform(const GLchar* name, f32 x, f32 y, f32 z)
 	{
 		if (!isInUse())
 			use();
 		glUniform3f(getUniformLocation(name), x, y, z);
 	}
 
-	void ShaderProgram::setUniform(const GLchar* name, float x, float y, float z, float w)
+	void ShaderProgram::setUniform(const GLchar* name, f32 x, f32 y, f32 z, f32 w)
 	{
 		if (!isInUse())
 			use();
 		glUniform4f(getUniformLocation(name), x, y, z, w);
 	}
 
-	void ShaderProgram::setUniform(const GLchar* name, unsigned int x)
+	void ShaderProgram::setUniform(const GLchar* name, u32 x)
 	{
 		if (!isInUse())
 			use();
 		glUniform1ui(getUniformLocation(name), x);
 	}
 
-	void ShaderProgram::setUniform(const GLchar* name, int x)
+	void ShaderProgram::setUniform(const GLchar* name, i32 x)
 	{
 		if (!isInUse())
 			use();
@@ -227,6 +223,34 @@ namespace Dunjun
 		if (!isInUse())
 			use();
 		glUniform1i(getUniformLocation(name), x);
+	}
+
+	void ShaderProgram::setUniform(const GLchar* name, const Vector2& v)
+	{
+		if (!isInUse())
+			use();
+		glUniform2fv(getUniformLocation(name), 1, v.data);
+	}
+
+	void ShaderProgram::setUniform(const GLchar* name, const Vector3& v)
+	{
+		if (!isInUse())
+			use();
+		glUniform3fv(getUniformLocation(name), 1, v.data);
+	}
+	
+	void ShaderProgram::setUniform(const GLchar* name, const Vector4& v)
+	{
+		if (!isInUse())
+			use();
+		glUniform4fv(getUniformLocation(name), 1, v.data);
+	}
+	
+	void ShaderProgram::setUniform(const GLchar* name, const Matrix4& m)
+	{
+		if (!isInUse())
+			use();
+		glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, m[0].data);
 	}
 
 } // namespace Dunjun

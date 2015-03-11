@@ -173,6 +173,19 @@ int main(int argc, char** argv)
 			glViewport(0, 0, width, height);
 		}
 
+		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		shaderProgram.use();
+
+		Dunjun::Matrix4 mat = Dunjun::translate({ 0.5f, 0.5f, 0.0f })
+			* Dunjun::rotate(3.14f / 3.0, { 0, 0, 1 })
+			* Dunjun::scale({2.0, 0.4f, 1.0});
+
+		shaderProgram.setUniform("uniModel", mat);
+		render();
+		shaderProgram.stopUsing();
+
 		if (tc.update(0.5))
 		{
 			//std::cout << tc.getTickRate() << std::endl; //Framerate to console
@@ -182,7 +195,6 @@ int main(int argc, char** argv)
 			glfwSetWindowTitle(window, titleStream.str().c_str());
 		}
 
-		render();
 
 		/*Swap front and back buffers*/
 		glfwSwapBuffers(window);

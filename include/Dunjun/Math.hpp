@@ -6,5 +6,6 @@
 #include <Dunjun/Math/Vector4.hpp>
 #include <Dunjun/Math/Matrix4.hpp>
 
+#include <Dunjun/Math/Functions.hpp>
 
 #endif // !DUNJUN_MATH_HPP
