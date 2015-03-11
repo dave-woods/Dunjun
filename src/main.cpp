@@ -118,14 +118,7 @@ int main(int argc, char** argv)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 
-	/*Vertices(x, y), colours(r, g, b), texture coordinates (s, t) of the onscreen triangle(s)*/
-	/*float vertices[] = {
-	//	    x      y     r     g     b     s     t
-		+0.5f, +0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // vertex 0
-		-0.5f, +0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // vertex 1
-		+0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, // vertex 2
-		-0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, // vertex 3
-	};*/
+	/*Vertices(x, y), colours(r, g, b, a), texture coordinates (s, t) of the onscreen triangle(s)*/
 	Vertex vertices[] = {
 		//	    x      y         r   g    b    a         s     t
 		{ { +0.5f, +0.5f }, { 255, 255, 255, 255 }, { 1.0f, 0.0f } }, // vertex 0
