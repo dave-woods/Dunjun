@@ -20,6 +20,8 @@ GLOBAL const int g_windowWidth = 854;
 GLOBAL const int g_windowHeight = 480;
 GLOBAL const char* windowTitle = "Dunjun v0.0.1";
 
+GLOBAL const Dunjun::f32 TAU = 6.28318530718f;
+
 struct Vertex
 {
 	Dunjun::Vector2 position;
@@ -115,8 +117,8 @@ int main(int argc, char** argv)
 	/*Initialise the library*/
 	glewInit();
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
 
 	/*Vertices(x, y), colours(r, g, b, a), texture coordinates (s, t) of the onscreen triangle(s)*/
 	Vertex vertices[] = {
@@ -167,22 +169,26 @@ int main(int argc, char** argv)
 	while (running)
 	{
 		//reshape
-		{
-			int width, height;
-			glfwGetWindowSize(window, &width, &height);
-			glViewport(0, 0, width, height);
-		}
+		int width, height;
+		glfwGetWindowSize(window, &width, &height);
+		glViewport(0, 0, width, height);
 
 		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shaderProgram.use();
+		{
+			using namespace Dunjun;
+			Matrix4 model = rotate(Radian(glfwGetTime() * TAU / 6.0), { 0, 1, 0 });
+			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0, 1, 0 });
+			Matrix4 proj = perspective(Radian(TAU / 12.0f), (f32)width / (f32)height, 0.1f, 100.0f);
 
-		Dunjun::Matrix4 mat = Dunjun::translate({ 0.5f, 0.5f, 0.0f })
-			* Dunjun::rotate(3.14f / 3.0, { 0, 0, 1 })
-			* Dunjun::scale({2.0, 0.4f, 1.0});
+			Matrix4 camera = proj * view;
+			
+			shaderProgram.setUniform("uniCamera", camera);
+			shaderProgram.setUniform("uniModel", model);
 
-		shaderProgram.setUniform("uniModel", mat);
+		}
 		render();
 		shaderProgram.stopUsing();
 

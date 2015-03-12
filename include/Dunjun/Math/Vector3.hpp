@@ -159,7 +159,7 @@ inline f32 length(const Vector3& a) { return std::sqrtf(dot(a, a)); }
 
 inline f32 lengthSquared(const Vector3& a) { return lengthSquared(a); }
 
-inline Vector3 normalized(const Vector3& a) { return a * (1.0 / length(a)); }
+inline Vector3 normalize(const Vector3& a) { return a * (1.0 / length(a)); }
 
 inline std::ostream& operator<<(std::ostream& os, const Vector3& v) { return os << "Vector3(" << v[0] << ", " << v[1] << ", " << v[2] << ")"; }
 

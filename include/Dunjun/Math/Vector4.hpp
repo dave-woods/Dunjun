@@ -178,7 +178,7 @@ namespace Dunjun
 
 	inline f32 lengthSquared(const Vector4& a) { return lengthSquared(a); }
 
-	inline Vector4 normalized(const Vector4& a) { return a * (1.0 / length(a)); }
+	inline Vector4 normalize(const Vector4& a) { return a * (1.0 / length(a)); }
 
 	inline std::ostream& operator<<(std::ostream& os, const Vector4& v) { return os << "Vector4(" << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3] << ")"; }
 
