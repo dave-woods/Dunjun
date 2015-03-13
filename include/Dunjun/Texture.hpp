@@ -5,7 +5,6 @@
 #include <Dunjun/Image.hpp>
 #include <Dunjun/OpenGL.hpp>
 
-
 namespace Dunjun
 {
 class Texture : public NonCopyable
@@ -19,7 +18,7 @@ public:
 
 	virtual ~Texture();
 
-	void bind(GLuint position);
+	void bind(GLuint position) const;
 
 	inline GLuint getObject() const { return m_object; }
 	inline GLfloat getWidth() const { return m_width; }

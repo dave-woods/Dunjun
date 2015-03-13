@@ -3,6 +3,7 @@
 
 #include <Dunjun/Types.hpp>
 #include <Dunjun/Math/Unit.hpp>
+#include <Dunjun/Math/Constants.hpp>
 
 #include <ostream>
 
@@ -64,20 +65,14 @@ namespace Impl
 		Radian(Unit<Degree, T> value);
 	};
 
-	// FIXME(bill): Setup Constants
 	template <class T>
 	Degree<T>::Degree(Unit<Radian, T> value)
-		//: Unit<Dunjun::Impl::Degree, T>(T(360) * T(value) /
-		// Constants<T>::tau())
-		: Unit<Dunjun::Impl::Degree, T>(T(360) * T(value) / T(6.28318530718))
+		: Unit<Dunjun::Impl::Degree, T>(T(360) * T(value) / Constants::TAU)
 	{
 	}
-	// FIXME(bill): Setup Constants
 	template <class T>
 	Radian<T>::Radian(Unit<Degree, T> value)
-		//: Unit<Dunjun::Impl::Radian, T>(T(value) * Constants<T>::tau() /
-		// T(360))
-		: Unit<Dunjun::Impl::Radian, T>(T(value) * T(6.28318530718) / T(360))
+		: Unit<Dunjun::Impl::Radian, T>(T(value) * Constants::TAU / T(360))
 	{
 	}
 } // namespace Impl

@@ -3,12 +3,12 @@
 
 #include <Dunjun/Types.hpp>
 
+#include <functional>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <memory>
-#include <functional>
 #include <stack>
+#include <stdexcept>
 
 #define GLOBAL static
 #define INTERNAL static

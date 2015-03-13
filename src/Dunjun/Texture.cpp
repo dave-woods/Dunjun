@@ -4,18 +4,22 @@
 
 namespace Dunjun
 {
-INTERNAL GLenum getInternalFormat(Image::Format format, bool srgb)
+INTERNAL GLenum getInternalFormat(Dunjun::ImageFormat format, bool srgb)
 {
 	switch (format)
 	{
-	case Image::Format_Greyscale:
+	case ImageFormat::Greyscale:
 		return GL_LUMINANCE;
-	case Image::Format_GreyscaleAlpha:
+	case ImageFormat::GreyscaleAlpha:
 		return GL_LUMINANCE_ALPHA;
-	case Image::Format_RGB:
+	case ImageFormat::RGB:
 		return (srgb ? GL_SRGB : GL_RGB);
-	case Image::Format_RGBA:
+	case ImageFormat::RGBA:
 		return (srgb ? GL_SRGB_ALPHA : GL_RGBA);
+	default:
+	case ImageFormat::None:
+		throw std::runtime_error("Non-valid ImageFormat.");
+		return 0;
 	}
 }
 
@@ -48,7 +52,7 @@ bool Texture::loadFromFile(const char* filename, GLint minMagFilter, GLint wrapM
 }
 bool Texture::loadFromImage(const Image& image, GLint minMagFilter, GLint wrapMode)
 {
-	if (image.getFormat() <= 0 || image.getFormat() > 4)
+	if ((usize)image.getFormat() <= 0 || (usize)image.getFormat() > 4)
 		return false;
 
 	m_width = (GLfloat)image.getWidth();
@@ -74,7 +78,7 @@ Texture::~Texture()
 	glDeleteTextures(1, &m_object);
 }
 
-void Texture::bind(GLuint position)
+void Texture::bind(GLuint position) const
 {
 	if (position > 31)
 	{
@@ -88,7 +92,6 @@ void Texture::bind(GLuint position)
 
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, (m_object ? m_object : 0));
-
 	glDisable(GL_TEXTURE_2D);
 }
 } //namespace Dunjun

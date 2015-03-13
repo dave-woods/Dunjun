@@ -5,8 +5,10 @@
 #include <Dunjun/NonCopyable.hpp>
 
 #include <Dunjun/Common.hpp>
-#include <Dunjun/Math.hpp>
 
+#include <Dunjun/Math/Matrix4.hpp>
+
+#include <map>
 #include <string>
 
 namespace Dunjun
@@ -51,13 +53,15 @@ public:
 	void setUniform(const GLchar* name, const Matrix4& m);
 
 	inline GLuint getObject() const { return m_object; }
-
 	inline const std::string& getErrorLog() const { return m_errorLog; }
 
 private:
 	GLuint m_object;
 	bool m_linked;
 	std::string m_errorLog;
+
+	std::map<const GLchar*, GLint> m_attribLocations;
+	std::map<const GLchar*, GLint> m_uniformLocations;
 };
 } // namespace Dunjun
 

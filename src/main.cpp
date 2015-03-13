@@ -13,14 +13,16 @@
 #include <cmath>
 #include <string>
 #include <fstream>
+#include <iostream>
 #include <sstream>
+#include <vector>
 
 
-GLOBAL const int g_windowWidth = 854;
-GLOBAL const int g_windowHeight = 480;
+GLOBAL int g_windowWidth = 854;
+GLOBAL int g_windowHeight = 480;
 GLOBAL const char* windowTitle = "Dunjun v0.0.1";
 
-GLOBAL const Dunjun::f32 TAU = 6.28318530718f;
+//GLOBAL const Dunjun::f32 TAU = 6.28318530718f;
 
 struct Vertex
 {
@@ -29,31 +31,35 @@ struct Vertex
 	Dunjun::Vector2 texCoord;
 };
 
+struct ModelAsset
+{
+	Dunjun::ShaderProgram* shaders;
+	Dunjun::Texture* texture;
+
+	GLuint vbo;
+	GLuint ibo;
+	
+	GLenum drawType;
+	
+	//GLint drawStart;
+	GLint drawCount;
+};
+
+struct ModelInstance
+{
+	ModelAsset* asset;
+	Dunjun::Matrix4 transform;
+};
+
+GLOBAL Dunjun::ShaderProgram* g_defaultShader;
+GLOBAL ModelAsset g_sprite;
+GLOBAL std::vector<ModelInstance> g_instances;
+GLOBAL Dunjun::Matrix4 g_cameraMatrix;
+
 INTERNAL void glfwHints()
 {
 	glfwWindowHint(GLFW_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_VERSION_MINOR, 1);
-}
-
-INTERNAL void render()
-{
-	/*Default pixel value (background colour)*/
-	glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	glEnableVertexAttribArray(0); //vertPosition
-	glEnableVertexAttribArray(1); //vertColor
-	glEnableVertexAttribArray(2); //vertTexCoord
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2) + sizeof(Dunjun::Color)));
-
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-	glDisableVertexAttribArray(0); //vertPosition
-	glDisableVertexAttribArray(1); //vertColor
-	glDisableVertexAttribArray(2); //vertTexCoord
 }
 
 INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
@@ -89,6 +95,125 @@ INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
 	*/
 }
 
+INTERNAL void loadShaders()
+{
+	g_defaultShader = new Dunjun::ShaderProgram();
+	if (!g_defaultShader->attachShaderFromFile(Dunjun::ShaderType::Vertex, "data/shaders/default.vert.glsl"))
+		throw std::runtime_error(g_defaultShader->getErrorLog());
+	if (!g_defaultShader->attachShaderFromFile(Dunjun::ShaderType::Fragment, "data/shaders/default.frag.glsl"))
+		throw std::runtime_error(g_defaultShader->getErrorLog());
+
+	g_defaultShader->bindAttribLocation(0, "a_position");
+	g_defaultShader->bindAttribLocation(1, "a_color");
+	g_defaultShader->bindAttribLocation(2, "a_texCoord");
+
+	if (!g_defaultShader->link())
+		throw std::runtime_error(g_defaultShader->getErrorLog());
+
+}
+
+INTERNAL void loadSpriteAsset()
+{
+	using namespace Dunjun;
+
+	Vertex vertices[] = {
+		//	    x      y         r     g     b     a         s     t
+		{ { -0.5f, -0.5f }, { 0xFF, 0x00, 0x00, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
+		{ { +0.5f, -0.5f }, { 0xFF, 0xFF, 0x00, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
+		{ { +0.5f, +0.5f }, { 0x00, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
+		{ { -0.5f, +0.5f }, { 0x00, 0x00, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
+	};
+
+	glGenBuffers(1, &g_sprite.vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, g_sprite.vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
+
+	u32 indices[] = {0, 1, 2, 2, 3, 0};
+
+	glGenBuffers(1, &g_sprite.ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_sprite.ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	g_sprite.shaders = g_defaultShader;
+	g_sprite.texture = new Texture();
+	g_sprite.texture->loadFromFile("data/textures/batman.jpg");
+
+	g_sprite.drawType = GL_TRIANGLES;
+	//g_sprite.drawStart = 0;
+	g_sprite.drawCount = 6;
+}
+
+INTERNAL void loadInstances()
+{
+	using namespace Dunjun;
+
+	ModelInstance a;
+	a.asset = &g_sprite;
+	a.transform = translate({ 0, 0, 0 });
+
+	g_instances.push_back(a);
+
+	ModelInstance b;
+	b.asset = &g_sprite;
+	b.transform = translate({ 2, 0, 0 });
+
+	g_instances.push_back(b);
+
+	ModelInstance c;
+	c.asset = &g_sprite;
+	c.transform = translate({ 0, 0, 1 });
+
+	g_instances.push_back(c);
+}
+
+INTERNAL void renderInstance(const ModelInstance& inst)
+{
+	ModelAsset* asset = inst.asset;
+	Dunjun::ShaderProgram* shaders = asset->shaders;
+
+	shaders->setUniform("u_camera", g_cameraMatrix);
+	shaders->setUniform("u_model", inst.transform);
+	shaders->setUniform("u_tex", 0);
+
+	asset->texture->bind(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, g_sprite.vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_sprite.ibo);
+
+	glEnableVertexAttribArray(0); //vertPosition
+	glEnableVertexAttribArray(1); //vertColor
+	glEnableVertexAttribArray(2); //vertTexCoord
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2) + sizeof(Dunjun::Color)));
+
+	//glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
+	glDrawElements(asset->drawType, asset->drawCount, GL_UNSIGNED_INT, nullptr);
+
+	glDisableVertexAttribArray(0); //vertPosition
+	glDisableVertexAttribArray(1); //vertColor
+	glDisableVertexAttribArray(2); //vertTexCoord
+}
+
+INTERNAL void render()
+{
+	Dunjun::ShaderProgram* currentShaders = nullptr;
+
+	for (const auto& inst : g_instances)
+	{
+		if (inst.asset->shaders != currentShaders)
+		{
+			currentShaders = inst.asset->shaders;
+			currentShaders->use();
+		}
+		renderInstance(inst);
+	}
+
+	if (currentShaders)
+		currentShaders->stopUsing();
+}
+
 int main(int argc, char** argv)
 {
 	/*Create the window*/
@@ -120,43 +245,9 @@ int main(int argc, char** argv)
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
 
-	/*Vertices(x, y), colours(r, g, b, a), texture coordinates (s, t) of the onscreen triangle(s)*/
-	Vertex vertices[] = {
-		//	    x      y         r   g    b    a         s     t
-		{ { +0.5f, +0.5f }, { 255, 255, 255, 255 }, { 1.0f, 0.0f } }, // vertex 0
-		{ { -0.5f, +0.5f }, { 000, 000, 255, 255 }, { 0.0f, 0.0f } }, // vertex 1
-		{ { +0.5f, -0.5f }, { 000, 255, 000, 255 }, { 1.0f, 1.0f } }, // vertex 2
-		{ { -0.5f, -0.5f }, { 255, 000, 000, 255 }, { 0.0f, 1.0f } }, // vertex 3
-	};
-
-	/*VertexBufferObject*/
-	GLuint vbo;
-	/*Generate the buffer*/
-	glGenBuffers(1, &vbo);
-	/*Bind the VBO to the buffer*/
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	/*Pass the vertices to the buffer*/
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
-
-	Dunjun::ShaderProgram shaderProgram;
-
-	if (!shaderProgram.attachShaderFromFile(Dunjun::ShaderType::Vertex, "data/shaders/default.vert.glsl"))
-		throw std::runtime_error(shaderProgram.getErrorLog());
-	if (!shaderProgram.attachShaderFromFile(Dunjun::ShaderType::Fragment, "data/shaders/default.frag.glsl"))
-		throw std::runtime_error(shaderProgram.getErrorLog());
-
-	shaderProgram.bindAttribLocation(0, "vertPosition");
-	shaderProgram.bindAttribLocation(1, "vertColor");
-	shaderProgram.bindAttribLocation(2, "vertTexCoord");
-
-	if (!shaderProgram.link())
-		throw std::runtime_error(shaderProgram.getErrorLog());
-	shaderProgram.use();
-
-	Dunjun::Texture tex;
-	tex.loadFromFile("data/textures/batman.jpg");
-	tex.bind(0);
-	shaderProgram.setUniform("uniTex", 0);
+	loadShaders();
+	loadSpriteAsset();
+	loadInstances();
 
 	std::stringstream titleStream;
 
@@ -172,25 +263,23 @@ int main(int argc, char** argv)
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
 		glViewport(0, 0, width, height);
+		g_windowWidth = width;
+		g_windowHeight = height;
 
+		{
+			using namespace Dunjun;
+			Matrix4 model = rotate(Degree(glfwGetTime() * 60.0f), { 0, 1, 0 });
+			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0, 1, 0 });
+			Matrix4 proj = perspective(Degree(50.0f), (f32)g_windowWidth / (f32)g_windowHeight, 0.1f, 100.0f);
+
+			g_cameraMatrix = proj * view;
+		}
+
+		/*Default pixel value (background colour)*/
 		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		shaderProgram.use();
-		{
-			using namespace Dunjun;
-			Matrix4 model = rotate(Radian(glfwGetTime() * TAU / 6.0), { 0, 1, 0 });
-			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0, 1, 0 });
-			Matrix4 proj = perspective(Radian(TAU / 12.0f), (f32)width / (f32)height, 0.1f, 100.0f);
-
-			Matrix4 camera = proj * view;
-			
-			shaderProgram.setUniform("uniCamera", camera);
-			shaderProgram.setUniform("uniModel", model);
-
-		}
 		render();
-		shaderProgram.stopUsing();
 
 		if (tc.update(0.5))
 		{
@@ -200,7 +289,6 @@ int main(int argc, char** argv)
 			titleStream << windowTitle << " - " << 1000.0 / tc.getTickRate() << " ms";
 			glfwSetWindowTitle(window, titleStream.str().c_str());
 		}
-
 
 		/*Swap front and back buffers*/
 		glfwSwapBuffers(window);

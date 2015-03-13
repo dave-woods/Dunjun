@@ -13,7 +13,7 @@ namespace Dunjun
 		friend class Unit;
 
 	public:
-		typedef T Type;
+		using Type = T;
 
 		Unit()
 			: m_value(T(0))
@@ -100,7 +100,7 @@ namespace Dunjun
 			return Unit<Derived, T>(m_value / number);
 		}
 
-		T operator/(Unit<Derived, T> other) const { return m_value / other.value; }
+		T operator/(Unit<Derived, T> other) const { return m_value / other.m_value; }
 
 	private:
 		T m_value;

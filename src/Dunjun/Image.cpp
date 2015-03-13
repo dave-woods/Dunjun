@@ -9,15 +9,15 @@
 namespace Dunjun
 {
 	Image::Image()
-		: m_format((Format)0)
+		: m_format(ImageFormat::None)
 		, m_width(0)
 		, m_height(0)
 		, m_pixels(nullptr)
 	{
 
 	}
-	Image::Image(u32 width, u32 height, Format format, const u8* pixels)
-		: m_format((Format)0)
+	Image::Image(u32 width, u32 height, ImageFormat format, const u8* pixels)
+		: m_format(ImageFormat::None)
 		, m_width(0)
 		, m_height(0)
 		, m_pixels(nullptr)
@@ -25,7 +25,7 @@ namespace Dunjun
 		loadFromMemory(width, height, format, pixels);
 	}
 	Image::Image(const Image& other)
-		: m_format((Format)0)
+		: m_format(ImageFormat::None)
 		, m_width(0)
 		, m_height(0)
 		, m_pixels(nullptr)
@@ -54,7 +54,7 @@ namespace Dunjun
 			return false;
 		}
 
-		loadFromMemory(width, height, (Format)format, pixels);
+		loadFromMemory(width, height, (ImageFormat)format, pixels);
 		
 		stbi_image_free(pixels);
 
@@ -62,7 +62,7 @@ namespace Dunjun
 			return true;
 		return false;
 	}
-	bool Image::loadFromMemory(u32 width, u32 height, Format format, const u8* pixels)
+	bool Image::loadFromMemory(u32 width, u32 height, ImageFormat format, const u8* pixels)
 	{
 		if (width == 0)
 		{
@@ -74,7 +74,7 @@ namespace Dunjun
 			std::cerr << "Zero height image." << std::endl;
 			return false;
 		}
-		if (format <= 0 || format > 4)
+		if ((usize)format <= 0 || (usize)format > 4)
 		{
 			std::cerr << "Invalid texture format." << std::endl;
 			return false;
@@ -84,7 +84,7 @@ namespace Dunjun
 		m_height = height;
 		m_format = format;
 
-		usize imageSize = width * height * format;
+		usize imageSize = width * height * (usize)format;
 		
 		if (m_pixels)
 			delete[] m_pixels;
@@ -101,37 +101,34 @@ namespace Dunjun
 	{
 		if (column >= m_width || row >= m_height)
 			return nullptr;
-		return m_pixels + (row * m_width + column) * m_format;
+		return m_pixels + (row * m_width + column) * (usize)m_format;
 	}
 	void Image::setPixel(u32 column, u32 row, const u32* pixel)
 	{
 		if (column >= m_width || row >= m_height)
 			return;
 		u8* p = getPixel(column, row);
-		std::memcpy(p, pixel, m_format);
+		std::memcpy(p, pixel, (usize)m_format);
 	}
 
 	void Image::flipVertically()
 	{
-		usize pitch = m_width * m_format;
+		usize pitch = m_width * (usize)m_format;
 		u32 halfRows = m_height / 2;
 		u8* rowBuffer = new u8[pitch];
 
 		for (u32 i = 0; i < halfRows; i++)
 		{
-			u8* row = m_pixels + (i * m_width) * m_format;
-			u8* oppositeRow = m_pixels + ((m_height - i - 1) * m_width) * m_format;
+			u8* row = m_pixels + (i * m_width) * (usize)m_format;
+			u8* oppositeRow = m_pixels + ((m_height - i - 1) * m_width) * (usize)m_format;
 			std::memcpy(rowBuffer, row, pitch);
 			std::memcpy(row, oppositeRow, pitch);
 			std::memcpy(oppositeRow, rowBuffer, pitch);
 		}
 		delete[] rowBuffer;
 	}
-	void Image::flipHorizontally()
-	{
-		return;
-	}
-	void Image::rotate90CCW()
+	
+	/*void Image::rotate90CCW()
 	{
 		return;
 	}
@@ -139,5 +136,5 @@ namespace Dunjun
 	void Image::copyRectFromImage(const Image& src, u32 srcCol, u32 srcRow, u32 destCol, u32 destRow, u32 width, u32 height)
 	{
 		return;
-	}
+	}*/
 } // namespace Dunjun

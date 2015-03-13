@@ -6,22 +6,22 @@
 
 namespace Dunjun
 {
-	class Clock
+class Clock
+{
+public:
+	inline f64 getElapsedTime() const { return (glfwGetTime() - m_startTime); }
+
+	inline f64 restart()
 	{
-	public:
-		inline f64 getElapsedTime() const { return (glfwGetTime() - m_startTime); }
+		f64 now = glfwGetTime();
+		f64 elapsed = now - m_startTime;
+		m_startTime = now;
 
-		f64 restart()
-		{
-			f64 now = glfwGetTime();
-			f64 elapsed = now - m_startTime;
-			m_startTime = now;
-
-			return elapsed;
-		}
-	private:
-		f64 m_startTime = glfwGetTime();
-	};
+		return elapsed;
+	}
+private:
+	f64 m_startTime = glfwGetTime();
+};
 }
 
 #endif

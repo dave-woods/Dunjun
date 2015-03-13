@@ -5,33 +5,33 @@
 
 namespace Dunjun
 {
-	class TickCounter
+class TickCounter
+{
+public:
+	bool update(f64 period)
 	{
-	public:
-		b8 update(f64 frequency)
+		bool reset = false;
+		if (m_clock.getElapsedTime() >= period)
 		{
-			b8 reset = false;
-			if (m_clock.getElapsedTime() >= frequency)
-			{
-				m_tickRate = m_tick / frequency;
-				m_tick = 0;
-				reset = true;
-				m_clock.restart();
-			}
-
-			m_tick++;
-
-			return reset;
+			m_tickRate = m_tick * (1.0 / period);
+			m_tick = 0;
+			reset = true;
+			m_clock.restart();
 		}
 
-		inline usize getTickRate() const { return m_tickRate; }
+		m_tick++;
 
-	private:
-		usize m_tick = 0;
-		usize m_tickRate = 0;
-		Clock m_clock;
+		return reset;
+	}
 
-	};
+	inline usize getTickRate() const { return m_tickRate; }
+
+private:
+	usize m_tick = 0;
+	usize m_tickRate = 0;
+	Clock m_clock;
+
+};
 }
 
 
