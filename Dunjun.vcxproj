@@ -100,6 +100,7 @@
     <ClInclude Include="include\Dunjun\Texture.hpp" />
     <ClInclude Include="include\Dunjun\TickCounter.hpp" />
     <ClInclude Include="include\Dunjun\Types.hpp" />
+    <ClInclude Include="include\Dunjun\Math\Quaternion.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\default.frag.glsl" />
