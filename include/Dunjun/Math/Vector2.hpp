@@ -149,13 +149,13 @@ inline Vector2 operator*(f32 scalar, const Vector2& vector) { return vector * sc
 
 inline f32 dot(const Vector2& a, const Vector2& b) { return a.x * b.x + a.y * b.y; }
 
-inline f32 cross(const Vector2& a, const Vector2& b) { return a.x * b.y - a.y * b.x; }
+inline f32 cross(const Vector2& a, const Vector2& b) { return a.x * b.y - b.x * a.y; }
 
-inline f32 length(const Vector2& a) { return std::sqrtf(dot(a, a)); }
+inline f32 lengthSquared(const Vector2& a) { return dot(a, a); }
 
-inline f32 lengthSquared(const Vector2& a) { return lengthSquared(a); }
+inline f32 length(const Vector2& a) { return std::sqrt(lengthSquared(a)); }
 
-inline Vector2 normalize(const Vector2& a) { return a * (1.0 / length(a)); }
+inline Vector2 normalize(const Vector2& a) { return a * (1.0f / length(a)); }
 
 inline std::ostream& operator<<(std::ostream& os, const Vector2& v) { return os << "Vector2(" << v[0] << ", " << v[1] << ")"; }
 

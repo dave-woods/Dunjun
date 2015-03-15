@@ -193,11 +193,11 @@ inline Vector4 operator*(f32 scalar, const Vector4& vector) { return vector * sc
 
 inline f32 dot(const Vector4& a, const Vector4& b) { return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w; }
 
-inline f32 length(const Vector4& a) { return std::sqrtf(dot(a, a)); }
+inline f32 lengthSquared(const Vector4& a) { return dot(a, a); }
 
-inline f32 lengthSquared(const Vector4& a) { return lengthSquared(a); }
+inline f32 length(const Vector4& a) { return std::sqrt(lengthSquared(a)); }
 
-inline Vector4 normalize(const Vector4& a) { return a * (1.0 / length(a)); }
+inline Vector4 normalize(const Vector4& a) { return a * (1.0f / length(a)); }
 
 inline std::ostream& operator<<(std::ostream& os, const Vector4& v) { return os << "Vector4(" << v[0] << ", " << v[1] << ", " << v[2] << ", " << v[3] << ")"; }
 

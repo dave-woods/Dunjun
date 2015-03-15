@@ -62,6 +62,8 @@ namespace Dunjun
 			shader = glCreateShader(GL_VERTEX_SHADER);
 		else if (type == ShaderType::Fragment)
 			shader = glCreateShader(GL_FRAGMENT_SHADER);
+		else
+			throw std::runtime_error("Shader type unknown.");
 
 		glShaderSource(shader, 1, &shaderSource, nullptr);
 		glCompileShader(shader);
@@ -96,9 +98,7 @@ namespace Dunjun
 	void ShaderProgram::use() const
 	{
 		if (!isInUse())
-		{
 			glUseProgram(m_object);
-		}
 	}
 
 	bool ShaderProgram::isInUse() const

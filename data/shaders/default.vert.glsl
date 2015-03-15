@@ -22,7 +22,7 @@ varying vec3 v_color;
 varying vec2 v_texCoord;
 
 uniform mat4 u_camera;
-uniform Transform u_transform = {vec3(0), vec4(0, 0, 0, 1.0f), vec3(1)};
+uniform Transform u_transform = {vec3(0), vec4(0, 0, 0, 1), vec3(1)};
 
 void main()
 {
@@ -30,8 +30,6 @@ void main()
 	v_texCoord = a_texCoord.st;
 
 	vec3 pos = vec3(a_position, 0.0);
-	//pos = u_transform.scale * pos;
-	//pos = quaternionRotate(u_transform.orientation, pos);
-	pos = u_transform.position + pos;
+	pos = u_transform.position + quaternionRotate(u_transform.orientation, u_transform.scale * pos);
 	gl_Position = u_camera * vec4(pos, 1.0);
 }

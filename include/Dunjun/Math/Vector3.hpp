@@ -166,13 +166,18 @@ inline Vector3 operator*(f32 scalar, const Vector3& vector) { return vector * sc
 
 inline f32 dot(const Vector3& a, const Vector3& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
 
-inline Vector3 cross(const Vector3& a, const Vector3& b) { return Vector3(a.y * b.z - b.y * a.z, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x); }
+inline Vector3 cross(const Vector3& a, const Vector3& b)
+{
+	return Vector3(a.y * b.z - b.y * a.z,
+					a.z * b.x - b.z * a.x,
+					a.x * b.y - b.x * a.y);
+}
 
-inline f32 length(const Vector3& a) { return std::sqrtf(dot(a, a)); }
+inline f32 lengthSquared(const Vector3& a) { return dot(a, a); }
 
-inline f32 lengthSquared(const Vector3& a) { return lengthSquared(a); }
+inline f32 length(const Vector3& a) { return std::sqrt(lengthSquared(a)); }
 
-inline Vector3 normalize(const Vector3& a) { return a * (1.0 / length(a)); }
+inline Vector3 normalize(const Vector3& a) { return a * (1.0f / length(a)); }
 
 inline std::ostream& operator<<(std::ostream& os, const Vector3& v) { return os << "Vector3(" << v[0] << ", " << v[1] << ", " << v[2] << ")"; }
 

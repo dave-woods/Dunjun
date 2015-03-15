@@ -7,44 +7,36 @@ namespace Dunjun
 {
 	struct Transform
 	{
-		Vector3 position;
-		Quaternion orientation;
-		Vector3 scale;
-
-		Transform()
-			: position({ 0, 0, 0 })
-			, orientation(Quaternion(0, 0, 0, 1))
-			, scale({ 1, 1, 1 })
-		{
-
-		}
+		Vector3 position = { 0, 0, 0 };
+		Quaternion orientation = { 0, 0, 0, 1 };
+		Vector3 scale = { 1, 1, 1 };
 
 		//World = Parent * Local
-		Transform operator*(const Transform& localSpace) const
+		Transform operator*(const Transform& ls) const
 		{
-			const Transform& parentSpace = *this;
-			Transform worldSpace;
+			const Transform& ps = *this;
+			Transform ws;
 
-			worldSpace.position = parentSpace.position + parentSpace.orientation * (parentSpace.scale * localSpace.position);
-			worldSpace.orientation = parentSpace.orientation * localSpace.orientation;
-			worldSpace.scale = parentSpace.scale * (parentSpace.orientation * localSpace.scale);
+			ws.position = ps.position + ps.orientation * (ps.scale * ls.position);
+			ws.orientation = ps.orientation * ls.orientation;
+			ws.scale = ps.scale * (ps.orientation * ls.scale);
 
-			return worldSpace;
+			return ws;
 		}
 
 		//Local = World / Parent
-		Transform operator/(const Transform& parentSpace) const
+		Transform operator/(const Transform& ps) const
 		{
-			const Transform& worldSpace = *this;
-			using namespace Dunjun;
-			Transform localSpace;
-			const Quaternion psConjugate = conjugate(parentSpace.orientation);
+			const Transform& ws = *this;
+			Transform ls;
 
-			localSpace.position = (psConjugate * (worldSpace.position - parentSpace.position)) / parentSpace.scale;
-			localSpace.orientation = parentSpace.orientation - worldSpace.orientation;
-			localSpace.scale = psConjugate * (worldSpace.scale / parentSpace.scale);
+			const Quaternion psConjugate = conjugate(ps.orientation);
 
-			return localSpace;
+			ls.position = (psConjugate * (ws.position - ps.position)) / ps.scale;
+			ls.orientation = psConjugate * ws.orientation;
+			ls.scale = psConjugate * (ws.scale / ps.scale);
+
+			return ls;
 		}
 	};
 
@@ -52,6 +44,11 @@ namespace Dunjun
 	{
 		const Transform i;
 		return i / t;
+	}
+
+	inline Matrix4 transformMatrix4(const Transform& t)
+	{
+		return translate(t.position) * quaternionToMatrix4(t.orientation) * scale(t.scale);
 	}
 } //namespace Dunjun
 

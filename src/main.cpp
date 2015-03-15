@@ -6,7 +6,7 @@
 #include <Dunjun/Clock.hpp>
 #include <Dunjun/TickCounter.hpp>
 #include <Dunjun/Math.hpp>
-#include <Dunjun/Color.hpp>
+#include <Dunjun/Vertex.hpp>
 #include <Dunjun/Transform.hpp>
 
 #include <GLFW/glfw3.h>
@@ -18,24 +18,18 @@
 #include <sstream>
 #include <vector>
 
+using namespace Dunjun;
 
 GLOBAL int g_windowWidth = 854;
 GLOBAL int g_windowHeight = 480;
 GLOBAL const char* windowTitle = "Dunjun v0.0.1";
 
-//GLOBAL const Dunjun::f32 TAU = 6.28318530718f;
-
-struct Vertex
-{
-	Dunjun::Vector2 position;
-	Dunjun::Color color;
-	Dunjun::Vector2 texCoord;
-};
+GLOBAL const f32 TIME_STEP = (1.0f / 60.0f);
 
 struct ModelAsset
 {
-	Dunjun::ShaderProgram* shaders;
-	Dunjun::Texture* texture;
+	ShaderProgram* shaders;
+	Texture* texture;
 
 	GLuint vbo;
 	GLuint ibo;
@@ -47,18 +41,24 @@ struct ModelAsset
 struct ModelInstance
 {
 	ModelAsset* asset;
-	Dunjun::Transform transform;
+	Transform transform;
 };
 
-GLOBAL Dunjun::ShaderProgram* g_defaultShader;
+GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
-GLOBAL Dunjun::Matrix4 g_cameraMatrix;
+GLOBAL Matrix4 g_cameraMatrix;
 
 INTERNAL void glfwHints()
 {
 	glfwWindowHint(GLFW_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_VERSION_MINOR, 1);
+}
+
+INTERNAL void resizeCallback(GLFWwindow* window, int width, int height)
+{
+	g_windowWidth = width;
+	g_windowHeight = height;
 }
 
 INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
@@ -96,10 +96,10 @@ INTERNAL void handleInput(GLFWwindow* window, bool* running, bool* fullscreen)
 
 INTERNAL void loadShaders()
 {
-	g_defaultShader = new Dunjun::ShaderProgram();
-	if (!g_defaultShader->attachShaderFromFile(Dunjun::ShaderType::Vertex, "data/shaders/default.vert.glsl"))
+	g_defaultShader = new ShaderProgram();
+	if (!g_defaultShader->attachShaderFromFile(ShaderType::Vertex, "data/shaders/default.vert.glsl"))
 		throw std::runtime_error(g_defaultShader->getErrorLog());
-	if (!g_defaultShader->attachShaderFromFile(Dunjun::ShaderType::Fragment, "data/shaders/default.frag.glsl"))
+	if (!g_defaultShader->attachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl"))
 		throw std::runtime_error(g_defaultShader->getErrorLog());
 
 	g_defaultShader->bindAttribLocation(0, "a_position");
@@ -113,14 +113,12 @@ INTERNAL void loadShaders()
 
 INTERNAL void loadSpriteAsset()
 {
-	using namespace Dunjun;
-
 	Vertex vertices[] = {
-		//	    x      y         r     g     b     a         s     t
-		{ { -0.5f, -0.5f }, { 0xFF, 0x00, 0x00, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
-		{ { +0.5f, -0.5f }, { 0xFF, 0xFF, 0x00, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
-		{ { +0.5f, +0.5f }, { 0x00, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
-		{ { -0.5f, +0.5f }, { 0x00, 0x00, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
+		//	    x      y     z         r     g     b     a         s     t
+		{ { -0.5f, -0.5f, 0.0f }, { 0xFF, 0x00, 0x00, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
+		{ { +0.5f, -0.5f, 0.0f }, { 0xFF, 0xFF, 0x00, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
+		{ { +0.5f, +0.5f, 0.0f }, { 0x00, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
+		{ { -0.5f, +0.5f, 0.0f }, { 0x00, 0x00, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
 	};
 
 	glGenBuffers(1, &g_sprite.vbo);
@@ -143,7 +141,7 @@ INTERNAL void loadSpriteAsset()
 
 INTERNAL void loadInstances()
 {
-	using namespace Dunjun;
+	Transform parent;
 
 	ModelInstance a;
 	a.asset = &g_sprite;
@@ -164,10 +162,25 @@ INTERNAL void loadInstances()
 	g_instances.push_back(c);
 }
 
+INTERNAL void update(float dt)
+{
+	g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
+
+	//TODO(dave): Create camera type
+	{
+		Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f },
+		{ 0.0f, 0.0f, 0.0f },
+		{ 0, 1, 0 });
+		Matrix4 proj = perspective(Degree(50.0f),
+			(f32)g_windowWidth / (f32)g_windowHeight,
+			0.1f, 100.0f);
+
+		g_cameraMatrix = proj * view;
+	}
+}
+
 INTERNAL void renderInstance(const ModelInstance& inst)
 {
-	using namespace Dunjun;
-
 	ModelAsset* asset = inst.asset;
 	ShaderProgram* shaders = asset->shaders;
 
@@ -185,8 +198,8 @@ INTERNAL void renderInstance(const ModelInstance& inst)
 	glEnableVertexAttribArray(2); //vertTexCoord
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
-	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2) + sizeof(Dunjun::Color)));
+	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3) + sizeof(Dunjun::Color)));
 
 	glDrawElements(asset->drawType, asset->drawCount, GL_UNSIGNED_INT, nullptr);
 
@@ -195,9 +208,15 @@ INTERNAL void renderInstance(const ModelInstance& inst)
 	glDisableVertexAttribArray(2); //vertTexCoord
 }
 
-INTERNAL void render()
+INTERNAL void render(GLFWwindow* window)
 {
-	Dunjun::ShaderProgram* currentShaders = nullptr;
+	glViewport(0, 0, g_windowWidth, g_windowHeight);
+
+	/*Default pixel value (background colour)*/
+	glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	ShaderProgram* currentShaders = nullptr;
 
 	for (const auto& inst : g_instances)
 	{
@@ -212,34 +231,34 @@ INTERNAL void render()
 
 	if (currentShaders)
 		currentShaders->stopUsing();
+
+	/*Swap front and back buffers*/
+	glfwSwapBuffers(window);
+	/*Poll for and process events*/
+	glfwPollEvents();
 }
 
 int main(int argc, char** argv)
 {
-	/*Create the window*/
 	GLFWwindow* window;
 
-	/*Initialise the library*/
 	if (!glfwInit())
 		return EXIT_FAILURE;
 	
-	/*Get the GLFW version*/
 	glfwHints();
 
-	/*Create a windowed mode window and its OpenGL context*/
 	window = glfwCreateWindow(g_windowWidth, g_windowHeight, windowTitle, nullptr, nullptr);
 	if (!window)
 	{
-		/*Window creation failure*/
 		glfwTerminate();
 		return EXIT_FAILURE;
 	}
 
-	/*Make the window's context current*/
+	glfwSetWindowSizeCallback(window, resizeCallback);
+
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
-	/*Initialise the library*/
 	glewInit();
 
 	//glEnable(GL_CULL_FACE);
@@ -254,57 +273,30 @@ int main(int argc, char** argv)
 
 	std::stringstream titleStream;
 
-	Dunjun::TickCounter tc;
-	Dunjun::Clock frameClock;
+	TickCounter tc;
+	Clock frameClock;
 
-	/*Loop until the user closes the window*/
+	double accumulator = 0;
+	double prevTime = glfwGetTime();
+
 	while (running)
 	{
-		//reshape
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-		glViewport(0, 0, width, height);
-		g_windowWidth = width;
-		g_windowHeight = height;
-
-		{
-			using namespace Dunjun;
-			Matrix4 model = rotate(Degree(glfwGetTime() * 60.0f), { 0, 1, 0 });
-			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f },
-									{ 0.0f, 0.0f, 0.0f },
-									{ 0, 1, 0 });
-			Matrix4 proj = perspective(Degree(50.0f),
-										(f32)g_windowWidth / (f32)g_windowHeight,
-										0.1f, 100.0f);
-
-			g_cameraMatrix = proj * view;
-		}
-
-		g_instances[0].transform.orientation = Dunjun::angleAxis(Dunjun::Radian(glfwGetTime()), {0, 1, 0});
-
-		/*Default pixel value (background colour)*/
-		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
-		//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		render();
-
-		if (tc.update(0.5))
-		{
-			//std::cout << tc.getTickRate() << std::endl; //Framerate to console
-			titleStream.str("");
-			titleStream.clear();
-			titleStream << windowTitle << " - " << 1000.0 / tc.getTickRate() << " ms";
-			glfwSetWindowTitle(window, titleStream.str().c_str());
-		}
-
-		/*Swap front and back buffers*/
-		glfwSwapBuffers(window);
-		/*Poll for and process events*/
-		glfwPollEvents();
+		double currentTime = glfwGetTime();
+		double dt = currentTime - prevTime;
+		prevTime = currentTime;
+		accumulator += dt;
 
 		handleInput(window, &running, &fullscreen);
 
+		while (accumulator >= TIME_STEP)
+		{
+			accumulator -= TIME_STEP;
+			update(TIME_STEP);
+		}
+		
+		render(window);
+
+		//Frame Limitation
 		while (frameClock.getElapsedTime() < 1.0 / 240.0)
 			;
 		frameClock.restart();

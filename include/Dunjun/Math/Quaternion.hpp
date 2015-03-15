@@ -2,9 +2,9 @@
 #define DUNJUN_MATH_QUATERNION_HPP
 
 #include <Dunjun/Math/Vector3.hpp>
+#include <Dunjun/Math/Matrix4.hpp>
 #include <Dunjun/Math/Angle.hpp>
 #include <Dunjun/Math/Constants.hpp>
-#include <Dunjun/Math/Matrix4.hpp>
 
 #include <ostream>
 
@@ -20,7 +20,7 @@ struct Quaternion
 	{
 	}
 
-	Quaternion(const Quaternion& other) = default;
+	Quaternion(const Quaternion& q) = default;
 
 	Quaternion(f32 x, f32 y, f32 z, f32 w)
 		: x(x)
@@ -31,7 +31,7 @@ struct Quaternion
 
 	}
 
-	Quaternion(const Vector3& v, f32 s)
+	explicit Quaternion(const Vector3& v, f32 s)
 		: x(v.x)
 		, y(v.y)
 		, z(v.z)
@@ -39,12 +39,12 @@ struct Quaternion
 	{
 	}
 
-	f32 operator[](usize index) const
+	inline const f32& operator[](usize index) const
 	{
 		return data[index];
 	}
 
-	f32& operator[](usize index)
+	inline f32& operator[](usize index)
 	{
 		return data[index];
 	}
@@ -89,9 +89,9 @@ struct Quaternion
 		// x => cross product
 		// . => dot product
 
-		c.x = a.w * b.x + a.x * b.x + a.y * b.x - a.z * b.x;
-		c.y = a.w * b.y - a.x * b.y + a.y * b.y + a.z * b.y;
-		c.z = a.w * b.z + a.x * b.z - a.y * b.z + a.z * b.z;
+		c.x = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y;
+		c.y = a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x;
+		c.z = a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w;
 		c.w = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z;
 		return c;
 	}
