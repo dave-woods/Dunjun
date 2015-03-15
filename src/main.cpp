@@ -55,7 +55,7 @@ GLOBAL Dunjun::ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Dunjun::Matrix4 g_cameraMatrix;
-GLOBAL Dunjun::Matrix4 g_model;
+/*GLOBAL Dunjun::Matrix4 g_model;*/
 
 INTERNAL void glfwHints()
 {
@@ -162,7 +162,7 @@ INTERNAL void loadInstances()
 
 	ModelInstance c;
 	c.asset = &g_sprite;
-	c.transform = translate({ -1, 0, 1 });
+	c.transform = translate({ 0, 0, 1 });
 
 	g_instances.push_back(c);
 }
@@ -173,7 +173,7 @@ INTERNAL void renderInstance(const ModelInstance& inst)
 	Dunjun::ShaderProgram* shaders = asset->shaders;
 
 	shaders->setUniform("u_camera", g_cameraMatrix);
-	shaders->setUniform("u_model", inst.transform * g_model);
+	shaders->setUniform("u_model", inst.transform/* * g_model*/);
 	shaders->setUniform("u_tex", 0);
 
 	asset->texture->bind(0);
@@ -217,7 +217,7 @@ INTERNAL void render()
 
 int main(int argc, char** argv)
 {
-	{
+	/*{
 		using namespace Dunjun;
 		Quaternion q;
 		Vector3 p;
@@ -228,12 +228,12 @@ int main(int argc, char** argv)
 		std::cout << q << std::endl;
 		std::cout << p << std::endl;
 
-		std::cout << (q * Quaternion(p, 0) * conjugate(q)).xyz << std::endl;
+		std::cout << (q * Quaternion(p, 0) * conjugate(q)).vector() << std::endl;
 		std::cout << q * p << std::endl;
 
 		std::cout << (f32)Degree(roll(q));
 
-	}
+	}*/
 
 
 
@@ -292,12 +292,12 @@ int main(int argc, char** argv)
 
 		{
 			using namespace Dunjun;
-			Matrix4 model = rotate(Degree(glfwGetTime() * 180.0f), { 0, 1, 0 });
+			Matrix4 model = rotate(Degree(glfwGetTime() * 60.0f), { 0, 1, 0 });
 			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0, 1, 0 });
 			Matrix4 proj = perspective(Degree(50.0f), (f32)g_windowWidth / (f32)g_windowHeight, 0.1f, 100.0f);
 
 			g_cameraMatrix = proj * view;
-			g_model = model;
+			//g_model = model;
 		}
 
 		/*Default pixel value (background colour)*/
