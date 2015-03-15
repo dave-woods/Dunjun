@@ -7,6 +7,7 @@
 #include <Dunjun/TickCounter.hpp>
 #include <Dunjun/Math.hpp>
 #include <Dunjun/Color.hpp>
+#include <Dunjun/Transform.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -40,22 +41,19 @@ struct ModelAsset
 	GLuint ibo;
 	
 	GLenum drawType;
-	
-	//GLint drawStart;
 	GLint drawCount;
 };
 
 struct ModelInstance
 {
 	ModelAsset* asset;
-	Dunjun::Matrix4 transform;
+	Dunjun::Transform transform;
 };
 
 GLOBAL Dunjun::ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Dunjun::Matrix4 g_cameraMatrix;
-/*GLOBAL Dunjun::Matrix4 g_model;*/
 
 INTERNAL void glfwHints()
 {
@@ -140,7 +138,6 @@ INTERNAL void loadSpriteAsset()
 	g_sprite.texture->loadFromFile("data/textures/batman.jpg");
 
 	g_sprite.drawType = GL_TRIANGLES;
-	//g_sprite.drawStart = 0;
 	g_sprite.drawCount = 6;
 }
 
@@ -150,31 +147,33 @@ INTERNAL void loadInstances()
 
 	ModelInstance a;
 	a.asset = &g_sprite;
-	a.transform = translate({ 0, 0, 0 });
-
+	a.transform.position = { 0, 0, 0 };
+	a.transform.scale = { 3, 3, 3 };
+	a.transform.orientation = angleAxis(Degree(45), { 0, 0, 1 });
 	g_instances.push_back(a);
 
 	ModelInstance b;
 	b.asset = &g_sprite;
-	b.transform = translate({ 2, 0, 0 });
-
+	b.transform.position = { 2, 0, 0 };
 	g_instances.push_back(b);
 
 	ModelInstance c;
 	c.asset = &g_sprite;
-	c.transform = translate({ 0, 0, 1 });
-
+	c.transform.position = { 0, 0, 1 };
+	c.transform.orientation = angleAxis(Degree(45), { 0, 1, 0 });
 	g_instances.push_back(c);
 }
 
 INTERNAL void renderInstance(const ModelInstance& inst)
 {
+	using namespace Dunjun;
+
 	ModelAsset* asset = inst.asset;
-	Dunjun::ShaderProgram* shaders = asset->shaders;
+	ShaderProgram* shaders = asset->shaders;
 
 	shaders->setUniform("u_camera", g_cameraMatrix);
-	shaders->setUniform("u_model", inst.transform/* * g_model*/);
-	shaders->setUniform("u_tex", 0);
+	shaders->setUniform("u_transform", inst.transform);
+	shaders->setUniform("u_tex", (Dunjun::u32)0);
 
 	asset->texture->bind(0);
 
@@ -189,7 +188,6 @@ INTERNAL void renderInstance(const ModelInstance& inst)
 	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2)));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector2) + sizeof(Dunjun::Color)));
 
-	//glDrawArrays(asset->drawType, asset->drawStart, asset->drawCount);
 	glDrawElements(asset->drawType, asset->drawCount, GL_UNSIGNED_INT, nullptr);
 
 	glDisableVertexAttribArray(0); //vertPosition
@@ -205,6 +203,7 @@ INTERNAL void render()
 	{
 		if (inst.asset->shaders != currentShaders)
 		{
+			
 			currentShaders = inst.asset->shaders;
 			currentShaders->use();
 		}
@@ -217,29 +216,6 @@ INTERNAL void render()
 
 int main(int argc, char** argv)
 {
-	/*{
-		using namespace Dunjun;
-		Quaternion q;
-		Vector3 p;
-
-		q = angleAxis(Degree(90), Vector3(0, 0, 1));
-		p = { 1, 1, 1 };
-
-		std::cout << q << std::endl;
-		std::cout << p << std::endl;
-
-		std::cout << (q * Quaternion(p, 0) * conjugate(q)).vector() << std::endl;
-		std::cout << q * p << std::endl;
-
-		std::cout << (f32)Degree(roll(q));
-
-	}*/
-
-
-
-
-
-
 	/*Create the window*/
 	GLFWwindow* window;
 
@@ -273,13 +249,14 @@ int main(int argc, char** argv)
 	loadSpriteAsset();
 	loadInstances();
 
+	bool fullscreen = false;
+	bool running = true;
+
 	std::stringstream titleStream;
 
 	Dunjun::TickCounter tc;
 	Dunjun::Clock frameClock;
 
-	bool fullscreen = false;
-	bool running = true;
 	/*Loop until the user closes the window*/
 	while (running)
 	{
@@ -293,12 +270,17 @@ int main(int argc, char** argv)
 		{
 			using namespace Dunjun;
 			Matrix4 model = rotate(Degree(glfwGetTime() * 60.0f), { 0, 1, 0 });
-			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f }, { 0.0f, 0.0f, 0.0f }, { 0, 1, 0 });
-			Matrix4 proj = perspective(Degree(50.0f), (f32)g_windowWidth / (f32)g_windowHeight, 0.1f, 100.0f);
+			Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f },
+									{ 0.0f, 0.0f, 0.0f },
+									{ 0, 1, 0 });
+			Matrix4 proj = perspective(Degree(50.0f),
+										(f32)g_windowWidth / (f32)g_windowHeight,
+										0.1f, 100.0f);
 
 			g_cameraMatrix = proj * view;
-			//g_model = model;
 		}
+
+		g_instances[0].transform.orientation = Dunjun::angleAxis(Dunjun::Radian(glfwGetTime()), {0, 1, 0});
 
 		/*Default pixel value (background colour)*/
 		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);

@@ -94,6 +94,15 @@ struct Vector3
 		return result;
 	}
 
+	//Hadamard Division (?)
+	inline Vector3 operator/(const Vector3& other) const
+	{
+		Vector3 result;
+		for (usize i = 0; i < 3; i++)
+			result[i] = data[i] / other.data[i];
+		return result;
+	}
+
 	inline Vector3 operator/(f32 scalar) const
 	{
 		return Vector3(x / scalar, y / scalar, z / scalar);

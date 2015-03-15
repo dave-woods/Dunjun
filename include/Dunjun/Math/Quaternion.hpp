@@ -191,7 +191,7 @@ inline Quaternion inverse(const Quaternion& q)
 	return c;
 }
 
-Vector3 operator*(const Quaternion& q, const Vector3& v)
+inline Vector3 operator*(const Quaternion& q, const Vector3& v)
 {
 	//return q * Quaternion(v, 0) * conjugate(q); // More expensive
 	Vector3 t = 2.0f * cross(q.vector(), v);
@@ -284,8 +284,8 @@ inline Matrix4 quaternionToMatrix4(const Quaternion& q)
 	const f32 xz = n.x * n.z;
 	const f32 yz = n.y * n.z;
 	const f32 wx = n.w * n.x;
-	const f32 wy = n.w * n.x;
-	const f32 wz = n.w * n.x;
+	const f32 wy = n.w * n.y;
+	const f32 wz = n.w * n.z;
 
 	mat[0][0] = 1.0f - 2.0f * (yy + zz);
 	mat[0][1] = 2.0f * (xy + wz);
