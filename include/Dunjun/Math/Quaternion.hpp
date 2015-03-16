@@ -301,7 +301,70 @@ inline Matrix4 quaternionToMatrix4(const Quaternion& q)
 
 	return mat;
 }
-//TODO(Dave): implement rotate, quat<-Mat4
+//Assumes matrix is only rotational without skew
+inline Quaternion matrix4ToQuaternion(const Matrix4& m)
+{
+	f32 fourXSquaredMinusOne = m[0][0] - m[1][1] - m[2][2];
+	f32 fourYSquaredMinusOne = m[1][1] - m[0][0] - m[2][2];
+	f32 fourZSquaredMinusOne = m[2][2] - m[0][0] - m[1][1];
+	f32 fourWSquaredMinusOne = m[2][2] + m[0][0] + m[1][1];
+
+	int biggestIndex = 0;
+	f32 fourBiggestSquaredMinusOne = fourWSquaredMinusOne;
+	if (fourXSquaredMinusOne > fourBiggestSquaredMinusOne)
+	{
+		fourBiggestSquaredMinusOne = fourXSquaredMinusOne;
+		biggestIndex = 1;
+	}
+	if (fourYSquaredMinusOne > fourBiggestSquaredMinusOne)
+	{
+		fourBiggestSquaredMinusOne = fourYSquaredMinusOne;
+		biggestIndex = 2;
+	}
+	if (fourZSquaredMinusOne > fourBiggestSquaredMinusOne)
+	{
+		fourBiggestSquaredMinusOne = fourZSquaredMinusOne;
+		biggestIndex = 3;
+	}
+
+	f32 biggestValue = std::sqrt(fourBiggestSquaredMinusOne + 1.0f) * 0.5f;
+	f32 mult = 0.25f / biggestValue;
+
+	Quaternion q;
+
+	switch (biggestIndex)
+	{
+	case 0:
+		q.w = biggestValue;
+		q.x = (m[1][2] - m[2][1]) * mult;
+		q.y = (m[2][0] - m[0][2]) * mult;
+		q.z = (m[0][1] - m[1][0]) * mult;
+		break;
+	case 1:
+		q.w = (m[1][2] - m[2][1]) * mult;
+		q.x = biggestValue;
+		q.y = (m[0][1] + m[1][0]) * mult;
+		q.z = (m[2][0] + m[0][2]) * mult;
+		break;
+	case 2:
+		q.w = (m[2][0] - m[0][2]) * mult;
+		q.x = (m[0][1] + m[1][0]) * mult;
+		q.y = biggestValue;
+		q.z = (m[1][2] + m[2][1]) * mult;
+		break;
+	case 3:
+		q.w = (m[0][1] - m[1][0]) * mult;
+		q.x = (m[2][0] + m[0][2]) * mult;
+		q.y = (m[1][2] + m[2][1]) * mult;
+		q.z = biggestValue;
+		break;
+	default: //Should never reach this
+		assert(false);
+		break;
+	}
+
+	return q;
+}
 
 }
 

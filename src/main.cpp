@@ -8,6 +8,7 @@
 #include <Dunjun/Math.hpp>
 #include <Dunjun/Vertex.hpp>
 #include <Dunjun/Transform.hpp>
+#include <Dunjun/Camera.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -47,7 +48,7 @@ struct ModelInstance
 GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
-GLOBAL Matrix4 g_cameraMatrix;
+GLOBAL Camera g_camera;
 
 INTERNAL void glfwHints()
 {
@@ -152,7 +153,7 @@ INTERNAL void loadInstances()
 
 	ModelInstance b;
 	b.asset = &g_sprite;
-	b.transform.position = { 2, 0, 0 };
+	b.transform.position = { 2, 0, -0.01f };
 	g_instances.push_back(b);
 
 	ModelInstance c;
@@ -162,20 +163,21 @@ INTERNAL void loadInstances()
 	g_instances.push_back(c);
 }
 
-INTERNAL void update(float dt)
+INTERNAL void update(f32 dt)
 {
-	g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
+	//g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
 
-	//TODO(dave): Create camera type
 	{
-		Matrix4 view = lookAt({ 1.0f, 2.0f, 4.0f },
-		{ 0.0f, 0.0f, 0.0f },
-		{ 0, 1, 0 });
-		Matrix4 proj = perspective(Degree(50.0f),
-			(f32)g_windowWidth / (f32)g_windowHeight,
-			0.1f, 100.0f);
+		Vector3& camPos = g_camera.transform.position;
+		//camPos = { 1, 2, 4 };
+		camPos.x = 7.0f * std::cos(glfwGetTime());
+		camPos.y = 5.0f;
+		camPos.z = 7.0f * std::sin(glfwGetTime());
 
-		g_cameraMatrix = proj * view;
+		g_camera.lookAt({ 0, 0, 0 });
+		g_camera.projectionType = ProjectionType::Perspective;
+		g_camera.fieldOfView = Degree(50.0f);
+		g_camera.viewportAspectRatio = (f32)g_windowWidth / (f32)g_windowHeight;
 	}
 }
 
@@ -184,7 +186,7 @@ INTERNAL void renderInstance(const ModelInstance& inst)
 	ModelAsset* asset = inst.asset;
 	ShaderProgram* shaders = asset->shaders;
 
-	shaders->setUniform("u_camera", g_cameraMatrix);
+	shaders->setUniform("u_camera", g_camera.getMatrix());
 	shaders->setUniform("u_transform", inst.transform);
 	shaders->setUniform("u_tex", (Dunjun::u32)0);
 
@@ -263,6 +265,8 @@ int main(int argc, char** argv)
 
 	//glEnable(GL_CULL_FACE);
 	//glCullFace(GL_BACK);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	loadShaders();
 	loadSpriteAsset();
@@ -276,13 +280,13 @@ int main(int argc, char** argv)
 	TickCounter tc;
 	Clock frameClock;
 
-	double accumulator = 0;
-	double prevTime = glfwGetTime();
+	f64 accumulator = 0;
+	f64 prevTime = glfwGetTime();
 
 	while (running)
 	{
-		double currentTime = glfwGetTime();
-		double dt = currentTime - prevTime;
+		f64 currentTime = glfwGetTime();
+		f64 dt = currentTime - prevTime;
 		prevTime = currentTime;
 		accumulator += dt;
 
