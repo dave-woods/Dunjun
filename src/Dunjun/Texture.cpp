@@ -24,18 +24,18 @@ INTERNAL GLenum getInternalFormat(Dunjun::ImageFormat format, bool srgb)
 }
 
 Texture::Texture()
-	: m_object(0)
-	, m_width(0)
-	, m_height(0)
+	: object(0)
+	, width(0)
+	, height(0)
 {
-	glGenTextures(1, &m_object);
+	glGenTextures(1, &object);
 }
 Texture::Texture(const Image& image, GLint minMagFilter, GLint wrapMode)
-	: m_object(0)
-	, m_width(image.getWidth())
-	, m_height(image.getHeight())
+	: object(0)
+	, width(image.width)
+	, height(image.height)
 {
-	glGenTextures(1, &m_object);
+	glGenTextures(1, &object);
 
 	if (!loadFromImage(image, minMagFilter, wrapMode))
 		throw std::runtime_error("Could not create texture from image.");
@@ -52,21 +52,21 @@ bool Texture::loadFromFile(const char* filename, GLint minMagFilter, GLint wrapM
 }
 bool Texture::loadFromImage(const Image& image, GLint minMagFilter, GLint wrapMode)
 {
-	if ((usize)image.getFormat() <= 0 || (usize)image.getFormat() > 4)
+	if ((const ImageFormat&)image.format == ImageFormat::None)
 		return false;
 
-	m_width = (GLfloat)image.getWidth();
-	m_height = (GLfloat)image.getHeight();
+	width = image.width;
+	height = image.height;
 
-	glGenTextures(1, &m_object);
-	glBindTexture(GL_TEXTURE_2D, m_object);
+	glGenTextures(1, &object);
+	glBindTexture(GL_TEXTURE_2D, object);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minMagFilter); // nearest = pixelated
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, minMagFilter); // linear = blurred
 
-	glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(image.getFormat(), true), (GLsizei)m_width, (GLsizei)m_height,
-		0, getInternalFormat(image.getFormat(), false), GL_UNSIGNED_BYTE, image.getPixelPtr());
+	glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(image.format, true), width, height,
+		0, getInternalFormat(image.format, false), GL_UNSIGNED_BYTE, image.pixels);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -75,7 +75,7 @@ bool Texture::loadFromImage(const Image& image, GLint minMagFilter, GLint wrapMo
 
 Texture::~Texture()
 {
-	glDeleteTextures(1, &m_object);
+	glDeleteTextures(1, &object);
 }
 
 void Texture::bind(GLuint position) const
@@ -91,7 +91,7 @@ void Texture::bind(GLuint position) const
 	glClientActiveTexture(GL_TEXTURE0 + position);
 
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, (m_object ? m_object : 0));
+	glBindTexture(GL_TEXTURE_2D, (object ? object : 0));
 	glDisable(GL_TEXTURE_2D);
 }
 } //namespace Dunjun

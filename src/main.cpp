@@ -22,7 +22,7 @@ using namespace Dunjun;
 
 GLOBAL int g_windowWidth = 854;
 GLOBAL int g_windowHeight = 480;
-GLOBAL const char* windowTitle = "Dunjun v0.0.1";
+GLOBAL const char* windowTitle = "Dunjun v0.0.23";
 
 GLOBAL const f32 TIME_STEP = (1.0f / 60.0f);
 
@@ -98,16 +98,16 @@ INTERNAL void loadShaders()
 {
 	g_defaultShader = new ShaderProgram();
 	if (!g_defaultShader->attachShaderFromFile(ShaderType::Vertex, "data/shaders/default.vert.glsl"))
-		throw std::runtime_error(g_defaultShader->getErrorLog());
+		throw std::runtime_error(g_defaultShader->errorLog);
 	if (!g_defaultShader->attachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl"))
-		throw std::runtime_error(g_defaultShader->getErrorLog());
+		throw std::runtime_error(g_defaultShader->errorLog);
 
 	g_defaultShader->bindAttribLocation(0, "a_position");
 	g_defaultShader->bindAttribLocation(1, "a_color");
 	g_defaultShader->bindAttribLocation(2, "a_texCoord");
 
 	if (!g_defaultShader->link())
-		throw std::runtime_error(g_defaultShader->getErrorLog());
+		throw std::runtime_error(g_defaultShader->errorLog);
 
 }
 

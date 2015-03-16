@@ -18,34 +18,26 @@ class Image
 {
 public:
 	Image();
-	Image(u32 width, u32 height, ImageFormat format, const u8* pixels = nullptr);
+	Image(u32 w, u32 h, ImageFormat f, const u8* p = nullptr);
 	Image(const Image& other);
 	Image& operator=(const Image& other);
 	~Image();
 
 	bool loadFromFile(const char* filename);
-	bool loadFromMemory(u32 width, u32 height, ImageFormat format, const u8* pixels);
-
-	inline u32 getWidth() const { return m_width; }
-	inline u32 getHeight() const { return m_height; }
-	inline ImageFormat getFormat() const { return m_format; }
-	inline u8* getPixelPtr() const { return m_pixels; }
+	bool loadFromMemory(u32 w, u32 h, ImageFormat f, const u8* p);
 
 	u8* getPixel(u32 column, u32 row) const;
-	void setPixel(u32 column, u32 row, const u32* pixel);
+	void setPixel(u32 column, u32 row, const u32* pix);
 
 	void flipVertically();
 	//TODO
 	//void rotate90CCW();
 	//void copyRectFromImage(const Image& src, u32 srcCol, u32 srcRow, u32 destCol, u32 destRow, u32 width, u32 height);
 
-
-private:
-
-	ImageFormat m_format;
-	u32 m_width;
-	u32 m_height;
-	u8* m_pixels;
+	ReadOnly<ImageFormat, Image> format;
+	ReadOnly<u32, Image> width;
+	ReadOnly<u32, Image> height;
+	ReadOnly<u8*, Image> pixels;
 };
 } //namespace Dunjun
 

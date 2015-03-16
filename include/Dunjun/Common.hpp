@@ -41,6 +41,7 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
 	return make_unique_helper<T>(std::is_array<T>(), std::forward<Args>(args)...);
 }
+
 } // namespace Dunjun
 
 #endif
