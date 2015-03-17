@@ -80,10 +80,6 @@ namespace Game
 		if (glfwWindowShouldClose(window) || Input::getKey(GLFW_KEY_ESCAPE))
 			*running = false;
 
-		if (Input::getKey(GLFW_KEY_H))
-		{
-			printf("H\n");
-		}
 
 		// Fullscreen DISABLED due to crashes
 		/*
@@ -190,10 +186,61 @@ namespace Game
 	INTERNAL void update(f32 dt)
 	{
 		//g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
+		/*{
+			if (!g_gamepad)
+				g_gamepad = new Gamepad(0);
+
+			g_gamepad->update();
+			if (g_gamepad->isConnected())
+				printf("Gamepad connected\n");
+
+		}*/
+		
+		f32 camVel = 5.0f;
+
+		{
+			if (Input::isGamepadPresent(Input::Gamepad_1))
+			{
+				Input::GamepadAxes axes = Input::getGamepadAxes(Input::Gamepad_1);
+
+				const f32 lookSensitivity = 0.5f;
+
+				Vector2 rts = axes.rightThumbstick;
+
+				g_camera.offsetOrientation(lookSensitivity * Radian(rts.x * dt), lookSensitivity * Radian(-rts.y * dt));
+
+				Vector2 lts = axes.leftThumbstick;
+
+				if (length(lts) > 1.0f)
+					lts = normalize(lts);
+
+				Vector3 velDir = { 0, 0, 0 };
+
+				velDir.x += camVel * lts.x;
+				velDir.z - camVel * lts.y; //xbox thumbstick has inverted y mapping
+
+				/*Input::GamepadButtons buttons = Input::getGamepadButtons(Input::Gamepad_1);
+
+				if (buttons[(usize)Input::XboxButton::RightShoulder])
+				{
+					velDir += {0, 1, 0};
+				}
+				if (buttons[(usize)Input::XboxButton::LeftShoulder])
+				{
+					velDir += {0, -1, 0};
+				}*/
+
+				if (length(velDir) > 1.0f)
+					velDir = normalize(velDir);
+
+				g_camera.transform.position += velDir * dt;
+
+			}
+		}
+
 
 		{
 			Vector2 curPos = Input::getCursorPosition();
-
 			const f32 mouseSensitivity = 0.05f;
 
 			//negative mouseSensitivity for inverted
@@ -203,7 +250,6 @@ namespace Game
 
 			Vector3& camPos = g_camera.transform.position;
 
-			f32 camVel = 5.0f;
 			Vector3 velDir = { 0, 0, 0 };
 			if (Input::getKey(GLFW_KEY_UP))
 			{
@@ -361,6 +407,7 @@ namespace Game
 			{
 				accumulator -= TIME_STEP;
 				handleInput(&running, &fullscreen);
+				Input::updateGamepads();
 				update(TIME_STEP);
 			}
 
