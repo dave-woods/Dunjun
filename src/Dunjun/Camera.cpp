@@ -32,7 +32,7 @@ namespace Dunjun
 		Quaternion yawRot = angleAxis(yaw, { 0, 1, 0 }); //absolute up
 		Quaternion pitchRot = angleAxis(pitch, right()); // relative right
 
-		transform.orientation = transform.orientation * pitchRot * yawRot;
+		transform.orientation = yawRot * pitchRot * transform.orientation;
 	}
 
 	Vector3 Camera::forward() const
