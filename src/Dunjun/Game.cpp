@@ -56,6 +56,8 @@ namespace
 
 GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
+GLOBAL ModelAsset g_floor;
+GLOBAL ModelAsset g_wall;
 GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Camera g_camera;
 
@@ -154,6 +156,34 @@ namespace Game
 		g_sprite.drawCount = 6;
 	}
 
+	INTERNAL void loadFloorAsset()
+	{
+		Vertex vertices[] = {
+			//	    x     y      z         r     g     b     a         s     t
+			{ { -0.5f, 0.0f, -0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
+			{ { +0.5f, 0.0f, -0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
+			{ { +0.5f, 0.0f, +0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
+			{ { -0.5f, 0.0f, +0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
+		};
+
+		glGenBuffers(1, &g_floor.vbo);
+		glBindBuffer(GL_ARRAY_BUFFER, g_floor.vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
+
+		u32 indices[] = { 0, 1, 2, 2, 3, 0 };
+
+		glGenBuffers(1, &g_floor.ibo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_floor.ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+		g_floor.shaders = g_defaultShader;
+		g_floor.texture = new Texture();
+		g_floor.texture->loadFromFile("data/textures/smile.jpg");
+
+		g_floor.drawType = GL_TRIANGLES;
+		g_floor.drawCount = 6;
+	}
+
 	INTERNAL void loadInstances()
 	{
 		Transform parent;
@@ -161,22 +191,20 @@ namespace Game
 		ModelInstance a;
 		a.asset = &g_sprite;
 		a.transform.position = { 0, 0, 0 };
-		a.transform.scale = { 3, 3, 3 };
-		a.transform.orientation = angleAxis(Degree(45), { 0, 0, 1 });
 		g_instances.push_back(a);
 
-		ModelInstance b;
-		b.asset = &g_sprite;
-		b.transform.position = { 2, 0, -0.01f };
-		g_instances.push_back(b);
+		for (int i = -3; i < 4; i++)
+		{
+			for (int j = -3; j < 4; j++)
+			{
+				ModelInstance f;
+				f.asset = &g_floor;
+				f.transform.position = { (f32)i, -0.5f, (f32)j };
+				g_instances.push_back(f);
+			}
+		}
 
-		ModelInstance c;
-		c.asset = &g_sprite;
-		c.transform.position = { 0, 0, 1 };
-		c.transform.orientation = angleAxis(Degree(45), { 0, 1, 0 });
-		g_instances.push_back(c);
-
-		g_camera.transform.position = { 2, 0, 7 };
+		g_camera.transform.position = { 0, 2, 7 };
 		g_camera.lookAt({ 0, 0, 0 });
 		g_camera.projectionType = ProjectionType::Perspective;
 		g_camera.fieldOfView = Degree(50.0f);
@@ -185,21 +213,20 @@ namespace Game
 	INTERNAL void update(f32 dt)
 	{
 		//g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
-		/*{
-			if (!g_gamepad)
-				g_gamepad = new Gamepad(0);
-
-			g_gamepad->update();
-			if (g_gamepad->isConnected())
-				printf("Gamepad connected\n");
-
-		}*/
 		
+		ModelInstance& player = g_instances[0];
+
+		//player.transform.position.x = std::cos(2.0f * Input::getTime());
+		//player.transform.position.z = std::sin(2.0f * Input::getTime());
+
+
 		f32 camVel = 5.0f;
 
-		{
+		// Gamepad stuff
+		/*{
 			if (Input::isGamepadPresent(Input::Gamepad_1))
 			{
+				std::cout << "GAMEPAD DETECTED" << std::endl;
 				Input::GamepadAxes axes = Input::getGamepadAxes(Input::Gamepad_1);
 
 				const f32 lookSensitivity = 2.0f;
@@ -288,41 +315,47 @@ namespace Game
 					Input::setGamepadVibration(Input::Gamepad_1, 0.0f, 0.0f);
 				}
 			}
-		}
+		}*/
 
+		f32 playerVel = 3.0f;
 
+		// Mouse/Keyboard stuff
 		{
-			Vector2 curPos = Input::getCursorPosition();
-			const f32 mouseSensitivity = 0.05f;
+			//Vector2 curPos = Input::getCursorPosition();
+			//const f32 mouseSensitivity = 0.05f;
 
 			//negative mouseSensitivity for inverted
-			g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
+			//g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
 
-			Input::setCursorPosition({ 0, 0 });
+			//Input::setCursorPosition({ 0, 0 });
 
-			Vector3& camPos = g_camera.transform.position;
+			//Vector3& camPos = g_camera.transform.position;
 
 			Vector3 velDir = { 0, 0, 0 };
 			
 			if (Input::isKeyPressed(Input::Key::Up))
 			{
-				Vector3 f = g_camera.forward();
-				f.y = 0;
-				f = normalize(f);
-				velDir += f;
+				//Vector3 f = g_camera.forward();
+				//f.y = 0;
+				//f = normalize(f);
+				//velDir += f;
+				velDir += {0, 0, -1};
 			}
 			if (Input::isKeyPressed(Input::Key::Down))
 			{
-				Vector3 b = g_camera.backward();
-				b.y = 0;
-				b = normalize(b);
-				velDir += b;
+				//Vector3 b = g_camera.backward();
+				//b.y = 0;
+				//b = normalize(b);
+				//velDir += b;
+				velDir += {0, 0, 1};
 			}
 
 			if (Input::isKeyPressed(Input::Key::Left))
-				velDir += g_camera.left();
+				//velDir += g_camera.left();
+				velDir += {-1, 0, 0};
 			if (Input::isKeyPressed(Input::Key::Right))
-				velDir += g_camera.right();
+				//velDir += g_camera.right();
+				velDir += {1, 0, 0};
 
 			if (Input::isKeyPressed(Input::Key::RShift))
 				velDir += {0, +1, 0};
@@ -332,12 +365,15 @@ namespace Game
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
 
-			camPos += camVel * velDir * dt;
+			//camPos += camVel * velDir * dt;
+			player.transform.position += playerVel * velDir * dt;
 
-			g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
+			player.transform.orientation = quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 0, -1 });
 
-			/*g_camera.fieldOfView = Radian(static_cast<f32>(g_camera.fieldOfView) + Input::getScrollOffset().y);*/
+			//g_camera.fieldOfView = Radian(static_cast<f32>(g_camera.fieldOfView) + Input::getScrollOffset().y);
 		}
+		g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
+
 	}
 
 	INTERNAL void renderInstance(const ModelInstance& inst)
@@ -351,14 +387,14 @@ namespace Game
 
 		asset->texture->bind(0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, g_sprite.vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_sprite.ibo);
+		glBindBuffer(GL_ARRAY_BUFFER, inst.asset->vbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, inst.asset->ibo);
 
 		glEnableVertexAttribArray(0); //vertPosition
 		glEnableVertexAttribArray(1); //vertColor
 		glEnableVertexAttribArray(2); //vertTexCoord
 
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
 		glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3)));
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3) + sizeof(Dunjun::Color)));
 
@@ -374,7 +410,8 @@ namespace Game
 		glViewport(0, 0, windowWidth, windowHeight);
 
 		/*Default pixel value (background colour)*/
-		glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
+		//glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
+		glClearColor(0, 0.09f, 0.21f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ShaderProgram* currentShaders = nullptr;
@@ -383,6 +420,8 @@ namespace Game
 		{
 			if (inst.asset->shaders != currentShaders)
 			{
+				if (currentShaders)
+					currentShaders->stopUsing();
 
 				currentShaders = inst.asset->shaders;
 				currentShaders->use();
@@ -423,7 +462,7 @@ namespace Game
 		Input::setup();
 
 		Input::setCursorPosition({ 0, 0 });
-		Input::setCursorMode(Input::CursorMode::Disabled);
+		//Input::setCursorMode(Input::CursorMode::Disabled);
 
 		//glEnable(GL_CULL_FACE);
 		//glCullFace(GL_BACK);
@@ -431,6 +470,7 @@ namespace Game
 		glDepthFunc(GL_LEQUAL);
 
 		loadShaders();
+		loadFloorAsset();
 		loadSpriteAsset();
 		loadInstances();
 	}

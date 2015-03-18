@@ -14,7 +14,7 @@ vec3 quaternionRotate(vec4 q, vec3 v)
 }
 
 
-attribute vec2 a_position;
+attribute vec3 a_position;
 attribute vec3 a_color;
 attribute vec2 a_texCoord;
 
@@ -29,7 +29,7 @@ void main()
 	v_color = a_color;
 	v_texCoord = a_texCoord.st;
 
-	vec3 pos = vec3(a_position, 0.0);
+	vec3 pos = a_position;
 	pos = u_transform.position + quaternionRotate(u_transform.orientation, u_transform.scale * pos);
 	gl_Position = u_camera * vec4(pos, 1.0);
 }

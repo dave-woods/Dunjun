@@ -2,9 +2,10 @@
 
 #include <Dunjun/Game.hpp>
 
+#define VC_EXTRALEAN
 #define WIN32_LEAN_AND_MEAN
 #define WIN32_MEAN_AND_LEAN
-#include <windows.h>
+#include <Windows.h>
 
 #include <Xinput.h>
 
@@ -14,15 +15,16 @@ namespace Dunjun
 {
 	namespace Input
 	{
-		GLOBAL f64 g_scrollX = 0;
-		GLOBAL f64 g_scrollY = 0;
 		GLOBAL std::array < XINPUT_STATE, Gamepad_MaxCount > g_gamepadStates;
+		
+		/*GLOBAL f64 g_scrollX = 0;
+		GLOBAL f64 g_scrollY = 0;
 
 		void scrollCallback(GLFWwindow* window, f64 offsetX, f64 offsetY)
 		{
 			g_scrollX = offsetX;
 			g_scrollY = offsetY;
-		}
+		}*/
 
 		void setup()
 		{
@@ -72,7 +74,6 @@ namespace Dunjun
 		{
 			int code = 0;
 
-			// NOTE(bill) IMPORTANT(bill): Do not use clang-format on this code
 			switch (key)
 			{
 			default:
@@ -411,6 +412,11 @@ namespace Dunjun
 		{
 			return Vector2(g_scrollX, g_scrollY);
 		}*/
+
+		bool isMouseButtonPressed(Mouse button)
+		{
+			return static_cast<bool>(glfwGetMouseButton(Game::getGlfwWindow(), (int)button));
+		}
 
 		f64 getTime()
 		{
