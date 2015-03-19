@@ -142,7 +142,7 @@ namespace Game
 		glBindBuffer(GL_ARRAY_BUFFER, g_sprite.vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
 
-		u32 indices[] = { 0, 1, 2, 2, 3, 0 };
+		u32 indices[] = { 0, 3, 2, 2, 1, 0 };
 
 		glGenBuffers(1, &g_sprite.ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_sprite.ibo);
@@ -170,7 +170,7 @@ namespace Game
 		glBindBuffer(GL_ARRAY_BUFFER, g_floor.vbo);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
 
-		u32 indices[] = { 0, 1, 2, 2, 3, 0 };
+		u32 indices[] = { 0, 3, 2, 2, 1, 0 };
 
 		glGenBuffers(1, &g_floor.ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_floor.ibo);
@@ -193,9 +193,10 @@ namespace Game
 		a.transform.position = { 0, 0, 0 };
 		g_instances.push_back(a);
 
-		for (int i = -3; i < 4; i++)
+		int mapSize = 3;
+		for (int i = -mapSize; i <= mapSize; i++)
 		{
-			for (int j = -3; j < 4; j++)
+			for (int j = -mapSize; j <= mapSize; j++)
 			{
 				ModelInstance f;
 				f.asset = &g_floor;
@@ -212,13 +213,7 @@ namespace Game
 
 	INTERNAL void update(f32 dt)
 	{
-		//g_instances[0].transform.orientation = angleAxis(Degree(120) * dt, { 0, 1, 0 }) * g_instances[0].transform.orientation;
-		
 		ModelInstance& player = g_instances[0];
-
-		//player.transform.position.x = std::cos(2.0f * Input::getTime());
-		//player.transform.position.z = std::sin(2.0f * Input::getTime());
-
 
 		f32 camVel = 5.0f;
 
@@ -317,44 +312,36 @@ namespace Game
 			}
 		}*/
 
-		f32 playerVel = 3.0f;
+		f32 playerVel = 4.0f;
 
 		// Mouse/Keyboard stuff
 		{
 			//Vector2 curPos = Input::getCursorPosition();
 			//const f32 mouseSensitivity = 0.05f;
-
-			//negative mouseSensitivity for inverted
+			////negative mouseSensitivity for inverted
 			//g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
-
 			//Input::setCursorPosition({ 0, 0 });
-
 			//Vector3& camPos = g_camera.transform.position;
+			
+			/*if (Input::isKeyPressed(Input::Key::A))
+				camPos += {-1, 0, 0};
+			if (Input::isKeyPressed(Input::Key::D))
+				camPos += {+1, 0, 0};
+			if (Input::isKeyPressed(Input::Key::W))
+				camPos += {0, 0, -1};
+			if (Input::isKeyPressed(Input::Key::S))
+				camPos += {0, 0, +1};*/
 
 			Vector3 velDir = { 0, 0, 0 };
 			
 			if (Input::isKeyPressed(Input::Key::Up))
-			{
-				//Vector3 f = g_camera.forward();
-				//f.y = 0;
-				//f = normalize(f);
-				//velDir += f;
 				velDir += {0, 0, -1};
-			}
 			if (Input::isKeyPressed(Input::Key::Down))
-			{
-				//Vector3 b = g_camera.backward();
-				//b.y = 0;
-				//b = normalize(b);
-				//velDir += b;
 				velDir += {0, 0, 1};
-			}
 
 			if (Input::isKeyPressed(Input::Key::Left))
-				//velDir += g_camera.left();
 				velDir += {-1, 0, 0};
 			if (Input::isKeyPressed(Input::Key::Right))
-				//velDir += g_camera.right();
 				velDir += {1, 0, 0};
 
 			if (Input::isKeyPressed(Input::Key::RShift))
@@ -364,13 +351,29 @@ namespace Game
 
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
+			
+				player.transform.position += playerVel * velDir * dt;
 
-			//camPos += camVel * velDir * dt;
-			player.transform.position += playerVel * velDir * dt;
+			{
+#if 1 // Billboard
+				player.transform.orientation = conjugate(quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 1, 0 }));
+#elif 1 // Billboard fixed y axis
+				Vector3 f = player.transform.position - g_camera.transform.position;
+				
+				f.y = 0;
+				if (f.x == 0 && f.z == 0)
+					player.transform.orientation = Quaternion();
+				else
+				{
+					Radian a(-std::atan(f.z / f.x));
+					a += Radian(Constants::TAU / 4.0f);
+					if (f.x < 0)
+						a -= Radian(Constants::TAU / 2.0f);
 
-			player.transform.orientation = quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 0, -1 });
-
-			//g_camera.fieldOfView = Radian(static_cast<f32>(g_camera.fieldOfView) + Input::getScrollOffset().y);
+					player.transform.orientation = angleAxis(a, { 0, 1, 0 });
+				}
+#endif
+			}
 		}
 		g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
 
@@ -410,7 +413,6 @@ namespace Game
 		glViewport(0, 0, windowWidth, windowHeight);
 
 		/*Default pixel value (background colour)*/
-		//glClearColor(0.5f, 0.69f, 1.0f, 1.0f);
 		glClearColor(0, 0.09f, 0.21f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

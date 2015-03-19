@@ -23,7 +23,7 @@ namespace Dunjun
 
 	Matrix4 matrix4LookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
 
-	Quaternion quaternionLookAt(const Vector3& eye, const Vector3& center, const Vector3& forward);
+	Quaternion quaternionLookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
 }
 
 #endif // !DUNJUN_MATH_FUNCTIONS_HPP
