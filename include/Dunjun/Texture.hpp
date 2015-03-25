@@ -4,6 +4,7 @@
 #include <Dunjun/NonCopyable.hpp>
 #include <Dunjun/Image.hpp>
 #include <Dunjun/OpenGL.hpp>
+#include <Dunjun/Common.hpp>
 
 namespace Dunjun
 {
@@ -33,7 +34,7 @@ public:
 
 	virtual ~Texture();
 
-	void bind(GLuint position) const;
+	GLOBAL void bind(const Texture* tex, GLuint position);
 
 	ReadOnly<GLuint, Texture> object;
 	ReadOnly<GLsizei, Texture> width;
