@@ -57,8 +57,6 @@ namespace
 
 GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
-GLOBAL ModelAsset g_floor;
-GLOBAL ModelAsset g_wall;
 GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Camera g_camera;
 GLOBAL std::map<std::string, Material> g_materials;
@@ -133,33 +131,41 @@ namespace Game
 
 	INTERNAL void loadMaterials()
 	{
+		g_materials["batman"].shaders = g_defaultShader;
+		g_materials["batman"].texture = new Texture();
+		g_materials["batman"].texture->loadFromFile("data/textures/character.png", TextureFilter::Nearest);
+
 		g_materials["default"].shaders = g_defaultShader;
 		g_materials["default"].texture = new Texture();
 		g_materials["default"].texture->loadFromFile("data/textures/default.png");
 
-		g_materials["smile"].shaders = g_defaultShader;
-		g_materials["smile"].texture = new Texture();
-		g_materials["smile"].texture->loadFromFile("data/textures/smile.jpg");
+		g_materials["stone"].shaders = g_defaultShader;
+		g_materials["stone"].texture = new Texture();
+		g_materials["stone"].texture->loadFromFile("data/textures/stone.png");
 
-		g_materials["batman"].shaders = g_defaultShader;
-		g_materials["batman"].texture = new Texture();
-		g_materials["batman"].texture->loadFromFile("data/textures/batman.jpg");
+		g_materials["terrain"].shaders = g_defaultShader;
+		g_materials["terrain"].texture = new Texture();
+		g_materials["terrain"].texture->loadFromFile("data/textures/terrain.png", TextureFilter::Nearest);
 	}
 
 	INTERNAL void loadSpriteAsset()
 	{
 		Mesh::Data meshData;
 
-		meshData.vertices.push_back({ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { { 0xFF, 0x00, 0x00, 0xFF } } });
+		/*meshData.vertices.push_back({ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { { 0xFF, 0x00, 0x00, 0xFF } } });
 		meshData.vertices.push_back({ { +0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0x00, 0xFF } } });
 		meshData.vertices.push_back({ { +0.5f, +0.5f, 0.0f }, { 1.0f, 1.0f }, { { 0x00, 0xFF, 0xFF, 0xFF } } });
-		meshData.vertices.push_back({ { -0.5f, +0.5f, 0.0f }, { 0.0f, 1.0f }, { { 0x00, 0x00, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { -0.5f, +0.5f, 0.0f }, { 0.0f, 1.0f }, { { 0x00, 0x00, 0xFF, 0xFF } } });*/
+		meshData.vertices.push_back({ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, +0.5f, 0.0f }, { 1.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { -0.5f, +0.5f, 0.0f }, { 0.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
 
 		meshData.indices.push_back(0);
-		meshData.indices.push_back(3);
-		meshData.indices.push_back(2);
-		meshData.indices.push_back(2);
 		meshData.indices.push_back(1);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(3);
 		meshData.indices.push_back(0);
 
 		g_meshes["sprite"] = new Mesh(meshData);
@@ -168,42 +174,118 @@ namespace Game
 		g_sprite.mesh = g_meshes["sprite"];
 	}
 
-	INTERNAL void loadFloorAsset()
-	{
-		Mesh::Data meshData;
-
-		meshData.vertices.push_back({ { -0.5f, 0.0f, -0.5f }, { 0.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		meshData.vertices.push_back({ { +0.5f, 0.0f, -0.5f }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		meshData.vertices.push_back({ { +0.5f, 0.0f, +0.5f }, { 1.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		meshData.vertices.push_back({ { -0.5f, 0.0f, +0.5f }, { 0.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-
-		meshData.indices.push_back(0);
-		meshData.indices.push_back(3);
-		meshData.indices.push_back(2);
-		meshData.indices.push_back(2);
-		meshData.indices.push_back(1);
-		meshData.indices.push_back(0);
-
-		g_meshes["floor"] = new Mesh(meshData);
-
-		g_floor.material = &g_materials["default"];
-		g_floor.mesh = g_meshes["floor"];
-	}
-
 	INTERNAL void generateWorld()
 	{
+		const f32 tileWidth = 1.0f / 16.0f;
+		const f32 tileHeight = 1.0f / 16.0f;
 		Mesh::Data floorMD;
-		int mapSize = 5;
-		for (int i = -mapSize; i <= mapSize; i++)
+		int mapSize = 8;
+		int mapHeight = 3;
+		for (int i = 0; i < mapSize; i++)
 		{
-			for (int j = -mapSize; j <= mapSize; j++)
+			for (int j = 0; j < mapSize; j++)
 			{
+				// Light wood
+				int tileX = 0;
+				int tileY = 11;
+
 				usize index = floorMD.vertices.size();
 
-				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, -0.5f + j }, { 0.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, -0.5f + j }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, +0.5f + j }, { 1.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, +0.5f + j }, { 0.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, -0.5f + j }, { tileX * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, +0.5f + j }, { tileX * tileWidth, tileY * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, +0.5f + j }, { (tileX + 1) * tileWidth, tileY * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, -0.5f + j }, { (tileX + 1) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+
+				floorMD.indices.push_back(index + 0);
+				floorMD.indices.push_back(index + 1);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 3);
+				floorMD.indices.push_back(index + 0);
+			}
+		}
+
+		for (int k = 0; k < mapHeight; k++)
+		{
+			//Left Wall
+			for (int j = 0; j < mapSize; j++)
+			{
+				// Stone
+				int tileX = 0 + rand() % 2;
+				int tileY = 15;
+
+				usize index = floorMD.vertices.size();
+
+				floorMD.vertices.push_back({ { -0.5f, k + 0.0f, -0.5f + j }, { (tileX + 1) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f, k + 0.0f, +0.5f + j }, { (tileX + 0) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f, k + 1.0f, +0.5f + j }, { (tileX + 0) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f, k + 1.0f, -0.5f + j }, { (tileX + 1) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+
+				floorMD.indices.push_back(index + 0);
+				floorMD.indices.push_back(index + 3);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 1);
+				floorMD.indices.push_back(index + 0);
+			}
+
+			//Right Wall
+			for (int j = 0; j < mapSize; j++)
+			{
+				// Stone
+				int tileX = 0 + rand() % 2;
+				int tileY = 15;
+
+				usize index = floorMD.vertices.size();
+
+				floorMD.vertices.push_back({ { -0.5f + mapSize, k + 0.0f, -0.5f + j }, { (tileX + 1) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + mapSize, k + 0.0f, +0.5f + j }, { (tileX + 0) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + mapSize, k + 1.0f, +0.5f + j }, { (tileX + 0) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + mapSize, k + 1.0f, -0.5f + j }, { (tileX + 1) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+
+				floorMD.indices.push_back(index + 0);
+				floorMD.indices.push_back(index + 1);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 3);
+				floorMD.indices.push_back(index + 0);
+			}
+
+			//Back Wall
+			for (int i = 0; i < mapSize; i++)
+			{
+				// Stone
+				int tileX = 0 + rand() % 2;
+				int tileY = 15;
+
+				usize index = floorMD.vertices.size();
+
+				floorMD.vertices.push_back({ { -0.5f + i, k + 0.0f, -0.5f }, { (tileX + 1) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, k + 0.0f, -0.5f }, { (tileX + 0) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, k + 1.0f, -0.5f }, { (tileX + 0) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + i, k + 1.0f, -0.5f }, { (tileX + 1) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+
+				floorMD.indices.push_back(index + 0);
+				floorMD.indices.push_back(index + 1);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 3);
+				floorMD.indices.push_back(index + 0);
+			}
+
+			//Front Wall
+			for (int i = 0; i < mapSize; i++)
+			{
+				// Stone
+				int tileX = 0 + rand() % 2;
+				int tileY = 15;
+
+				usize index = floorMD.vertices.size();
+
+				floorMD.vertices.push_back({ { -0.5f + i, k + 0.0f, -0.5f + mapSize }, { (tileX + 1) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, k + 0.0f, -0.5f + mapSize }, { (tileX + 0) * tileWidth, (tileY + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, k + 1.0f, -0.5f + mapSize }, { (tileX + 0) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + i, k + 1.0f, -0.5f + mapSize }, { (tileX + 1) * tileWidth, (tileY + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
 
 				floorMD.indices.push_back(index + 0);
 				floorMD.indices.push_back(index + 3);
@@ -213,13 +295,12 @@ namespace Game
 				floorMD.indices.push_back(index + 0);
 			}
 		}
-		
+
 		g_meshes["floor"] = new Mesh(floorMD);
 		ModelInstance floorMI;
 		floorMI.asset = new ModelAsset();
 		floorMI.asset->mesh = g_meshes["floor"];
-		floorMI.asset->material = &g_materials["default"];
-		floorMI.transform.position.y = -0.5;
+		floorMI.asset->material = &g_materials["terrain"];
 		g_instances.push_back(floorMI);
 	}
 
@@ -229,17 +310,16 @@ namespace Game
 
 		ModelInstance a;
 		a.asset = &g_sprite;
-		a.transform.position = { 0, 0, 0 };
+		a.transform.position = { 0, 0.5, 0 };
+		a.transform.scale = { 1, 1, 1 };
 		g_instances.push_back(a);
 
 		generateWorld();
 
-		g_camera.transform.position = { 0, 2, 7 };
+		g_camera.transform.position = { 0, 4, 10 };
 		g_camera.lookAt({ 0, 0, 0 });
 		g_camera.projectionType = ProjectionType::Perspective;
 		g_camera.fieldOfView = Degree(50.0f);
-		//g_camera.projectionType = ProjectionType::Orthographic;
-		//g_camera.orthoScale = 1.0f;
 	}
 
 	INTERNAL void update(f32 dt)
@@ -347,21 +427,27 @@ namespace Game
 
 		// Mouse/Keyboard stuff
 		{
-			//Vector2 curPos = Input::getCursorPosition();
-			//const f32 mouseSensitivity = 0.05f;
-			////negative mouseSensitivity for inverted
-			//g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
-			//Input::setCursorPosition({ 0, 0 });
-			//Vector3& camPos = g_camera.transform.position;
+			Vector2 curPos = Input::getCursorPosition();
+			const f32 mouseSensitivity = 0.05f;
+			//negative mouseSensitivity for inverted
+			g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
+			Input::setCursorPosition({ 0, 0 });
+			Vector3 camPos = { 0, 0, 0 };
 			
-			/*if (Input::isKeyPressed(Input::Key::A))
+			if (Input::isKeyPressed(Input::Key::A))
 				camPos += {-1, 0, 0};
 			if (Input::isKeyPressed(Input::Key::D))
 				camPos += {+1, 0, 0};
 			if (Input::isKeyPressed(Input::Key::W))
 				camPos += {0, 0, -1};
 			if (Input::isKeyPressed(Input::Key::S))
-				camPos += {0, 0, +1};*/
+				camPos += {0, 0, +1};
+			if (Input::isKeyPressed(Input::Key::LControl))
+				camPos += {0, -1, 0};
+			if (Input::isKeyPressed(Input::Key::LShift))
+				camPos += {0, +1, 0};
+
+			g_camera.transform.position += camVel * camPos * dt;
 
 			Vector3 velDir = { 0, 0, 0 };
 			
@@ -383,7 +469,7 @@ namespace Game
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
 			
-				player.transform.position += playerVel * velDir * dt;
+			player.transform.position += playerVel * velDir * dt;
 
 			{
 #if 0 // Billboard
@@ -406,8 +492,8 @@ namespace Game
 #endif
 			}
 		}
-		g_camera.transform.position.x = player.transform.position.x;
-		g_camera.lookAt(player.transform.position);
+		//g_camera.transform.position.x = player.transform.position.x;
+		//g_camera.lookAt(player.transform.position);
 		g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
 
 	}
@@ -431,7 +517,7 @@ namespace Game
 		glViewport(0, 0, windowWidth, windowHeight);
 
 		/*Default pixel value (background colour)*/
-		glClearColor(0, 0.09f, 0.21f, 1.0f);
+		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		ShaderProgram* currentShaders = nullptr;
@@ -484,14 +570,13 @@ namespace Game
 		Input::setCursorPosition({ 0, 0 });
 		//Input::setCursorMode(Input::CursorMode::Disabled);
 
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LEQUAL);
 
 		loadShaders();
 		loadMaterials();
-		loadFloorAsset();
 		loadSpriteAsset();
 		loadInstances();
 	}

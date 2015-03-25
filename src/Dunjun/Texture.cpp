@@ -30,7 +30,7 @@ Texture::Texture()
 {
 	glGenTextures(1, &object);
 }
-Texture::Texture(const Image& image, GLint minMagFilter, GLint wrapMode)
+Texture::Texture(const Image& image, TextureFilter minMagFilter, TextureWrapMode wrapMode)
 	: object(0)
 	, width(image.width)
 	, height(image.height)
@@ -41,7 +41,7 @@ Texture::Texture(const Image& image, GLint minMagFilter, GLint wrapMode)
 		throw std::runtime_error("Could not create texture from image.");
 }
 
-bool Texture::loadFromFile(const char* filename, GLint minMagFilter, GLint wrapMode)
+bool Texture::loadFromFile(const char* filename, TextureFilter minMagFilter, TextureWrapMode wrapMode)
 {
 	Image image;
 	if (!image.loadFromFile(filename))
@@ -50,7 +50,7 @@ bool Texture::loadFromFile(const char* filename, GLint minMagFilter, GLint wrapM
 
 	return loadFromImage(image, minMagFilter, wrapMode);
 }
-bool Texture::loadFromImage(const Image& image, GLint minMagFilter, GLint wrapMode)
+bool Texture::loadFromImage(const Image& image, TextureFilter minMagFilter, TextureWrapMode wrapMode)
 {
 	if ((const ImageFormat&)image.format == ImageFormat::None)
 		return false;
@@ -60,10 +60,10 @@ bool Texture::loadFromImage(const Image& image, GLint minMagFilter, GLint wrapMo
 
 	glGenTextures(1, &object);
 	glBindTexture(GL_TEXTURE_2D, object);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minMagFilter); // nearest = pixelated
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, minMagFilter); // linear = blurred
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, static_cast<GLint>(wrapMode));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, static_cast<GLint>(wrapMode));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, static_cast<GLint>(minMagFilter)); // nearest = pixelated
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, static_cast<GLint>(minMagFilter)); // linear = blurred
 
 	glTexImage2D(GL_TEXTURE_2D, 0, getInternalFormat(image.format, true), width, height,
 		0, getInternalFormat(image.format, false), GL_UNSIGNED_BYTE, image.pixels);

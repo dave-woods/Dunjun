@@ -7,14 +7,29 @@
 
 namespace Dunjun
 {
+	enum class TextureFilter : GLint
+	{
+		Linear = GL_LINEAR,
+		Nearest = GL_NEAREST,
+	};
+
+	enum class TextureWrapMode : GLint
+	{
+		Clamp = GL_CLAMP,
+		Repeat = GL_REPEAT,
+		ClampToEdge = GL_CLAMP_TO_EDGE,
+		ClampToBorder = GL_CLAMP_TO_BORDER,
+		MirroredRepeat = GL_MIRRORED_REPEAT,
+	};
+
 class Texture : private NonCopyable
 {
 public:
 	Texture();
-	Texture(const Image& image, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
+	Texture(const Image& image, TextureFilter minMagFilter = TextureFilter::Linear, TextureWrapMode wrapMode = TextureWrapMode::ClampToEdge);
 
-	bool loadFromFile(const char* filename, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
-	bool loadFromImage(const Image& image, GLint minMagFilter = GL_LINEAR, GLint wrapMode = GL_CLAMP_TO_EDGE);
+	bool loadFromFile(const char* filename, TextureFilter minMagFilter = TextureFilter::Linear, TextureWrapMode wrapMode = TextureWrapMode::ClampToEdge);
+	bool loadFromImage(const Image& image, TextureFilter minMagFilter = TextureFilter::Linear, TextureWrapMode wrapMode = TextureWrapMode::ClampToEdge);
 
 	virtual ~Texture();
 
