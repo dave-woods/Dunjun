@@ -15,6 +15,7 @@
 #include <Dunjun/Math.hpp>
 #include <Dunjun/Transform.hpp>
 #include <Dunjun/Camera.hpp>
+#include <Dunjun/Mesh.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -27,16 +28,16 @@
 
 namespace Dunjun
 {
-struct ModelAsset
+struct Material
 {
 	ShaderProgram* shaders;
 	Texture* texture;
+};
 
-	GLuint vbo;
-	GLuint ibo;
-
-	GLenum drawType;
-	GLint drawCount;
+struct ModelAsset
+{
+	const Material* material;
+	const Mesh* mesh;
 };
 
 struct ModelInstance
@@ -51,7 +52,7 @@ namespace
 	GLFWwindow* window;
 	int windowWidth = 854;
 	int windowHeight = 480;
-	const char* windowTitle = "Dunjun v0.0.27";
+	const char* windowTitle = "Dunjun v0.0.34";
 } // anonymous
 
 GLOBAL ShaderProgram* g_defaultShader;
@@ -60,6 +61,8 @@ GLOBAL ModelAsset g_floor;
 GLOBAL ModelAsset g_wall;
 GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Camera g_camera;
+GLOBAL std::map<std::string, Material> g_materials;
+GLOBAL std::map<std::string, Mesh*> g_meshes;
 
 namespace Game
 {
@@ -119,69 +122,105 @@ namespace Game
 		if (!g_defaultShader->attachShaderFromFile(ShaderType::Fragment, "data/shaders/default.frag.glsl"))
 			throw std::runtime_error(g_defaultShader->errorLog);
 
-		g_defaultShader->bindAttribLocation(0, "a_position");
-		g_defaultShader->bindAttribLocation(1, "a_color");
-		g_defaultShader->bindAttribLocation(2, "a_texCoord");
+		g_defaultShader->bindAttribLocation((u32)AttribLocation::Position, "a_position");
+		g_defaultShader->bindAttribLocation((u32)AttribLocation::TexCoord, "a_texCoord");
+		g_defaultShader->bindAttribLocation((u32)AttribLocation::Color, "a_color");
 
 		if (!g_defaultShader->link())
 			throw std::runtime_error(g_defaultShader->errorLog);
 
 	}
 
+	INTERNAL void loadMaterials()
+	{
+		g_materials["default"].shaders = g_defaultShader;
+		g_materials["default"].texture = new Texture();
+		g_materials["default"].texture->loadFromFile("data/textures/default.png");
+
+		g_materials["smile"].shaders = g_defaultShader;
+		g_materials["smile"].texture = new Texture();
+		g_materials["smile"].texture->loadFromFile("data/textures/smile.jpg");
+
+		g_materials["batman"].shaders = g_defaultShader;
+		g_materials["batman"].texture = new Texture();
+		g_materials["batman"].texture->loadFromFile("data/textures/batman.jpg");
+	}
+
 	INTERNAL void loadSpriteAsset()
 	{
-		Vertex vertices[] = {
-			//	    x      y     z         r     g     b     a         s     t
-			{ { -0.5f, -0.5f, 0.0f }, { 0xFF, 0x00, 0x00, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
-			{ { +0.5f, -0.5f, 0.0f }, { 0xFF, 0xFF, 0x00, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
-			{ { +0.5f, +0.5f, 0.0f }, { 0x00, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
-			{ { -0.5f, +0.5f, 0.0f }, { 0x00, 0x00, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
-		};
+		Mesh::Data meshData;
 
-		glGenBuffers(1, &g_sprite.vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, g_sprite.vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
+		meshData.vertices.push_back({ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { { 0xFF, 0x00, 0x00, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0x00, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, +0.5f, 0.0f }, { 1.0f, 1.0f }, { { 0x00, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { -0.5f, +0.5f, 0.0f }, { 0.0f, 1.0f }, { { 0x00, 0x00, 0xFF, 0xFF } } });
 
-		u32 indices[] = { 0, 3, 2, 2, 1, 0 };
+		meshData.indices.push_back(0);
+		meshData.indices.push_back(3);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(1);
+		meshData.indices.push_back(0);
 
-		glGenBuffers(1, &g_sprite.ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_sprite.ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		g_meshes["sprite"] = new Mesh(meshData);
 
-		g_sprite.shaders = g_defaultShader;
-		g_sprite.texture = new Texture();
-		g_sprite.texture->loadFromFile("data/textures/batman.jpg");
-
-		g_sprite.drawType = GL_TRIANGLES;
-		g_sprite.drawCount = 6;
+		g_sprite.material = &g_materials["batman"];
+		g_sprite.mesh = g_meshes["sprite"];
 	}
 
 	INTERNAL void loadFloorAsset()
 	{
-		Vertex vertices[] = {
-			//	    x     y      z         r     g     b     a         s     t
-			{ { -0.5f, 0.0f, -0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 0.0f, 0.0f } }, // vertex 0
-			{ { +0.5f, 0.0f, -0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 1.0f, 0.0f } }, // vertex 1
-			{ { +0.5f, 0.0f, +0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 1.0f, 1.0f } }, // vertex 2
-			{ { -0.5f, 0.0f, +0.5f }, { 0xFF, 0xFF, 0xFF, 0xFF }, { 0.0f, 1.0f } }, // vertex 3
-		};
+		Mesh::Data meshData;
 
-		glGenBuffers(1, &g_floor.vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, g_floor.vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // drawn once
+		meshData.vertices.push_back({ { -0.5f, 0.0f, -0.5f }, { 0.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, 0.0f, -0.5f }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { +0.5f, 0.0f, +0.5f }, { 1.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+		meshData.vertices.push_back({ { -0.5f, 0.0f, +0.5f }, { 0.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
 
-		u32 indices[] = { 0, 3, 2, 2, 1, 0 };
+		meshData.indices.push_back(0);
+		meshData.indices.push_back(3);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(2);
+		meshData.indices.push_back(1);
+		meshData.indices.push_back(0);
 
-		glGenBuffers(1, &g_floor.ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_floor.ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+		g_meshes["floor"] = new Mesh(meshData);
 
-		g_floor.shaders = g_defaultShader;
-		g_floor.texture = new Texture();
-		g_floor.texture->loadFromFile("data/textures/smile.jpg");
+		g_floor.material = &g_materials["default"];
+		g_floor.mesh = g_meshes["floor"];
+	}
 
-		g_floor.drawType = GL_TRIANGLES;
-		g_floor.drawCount = 6;
+	INTERNAL void generateWorld()
+	{
+		Mesh::Data floorMD;
+		int mapSize = 5;
+		for (int i = -mapSize; i <= mapSize; i++)
+		{
+			for (int j = -mapSize; j <= mapSize; j++)
+			{
+				usize index = floorMD.vertices.size();
+
+				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, -0.5f + j }, { 0.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, -0.5f + j }, { 1.0f, 0.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { +0.5f + i, 0.0f, +0.5f + j }, { 1.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+				floorMD.vertices.push_back({ { -0.5f + i, 0.0f, +0.5f + j }, { 0.0f, 1.0f }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+
+				floorMD.indices.push_back(index + 0);
+				floorMD.indices.push_back(index + 3);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 2);
+				floorMD.indices.push_back(index + 1);
+				floorMD.indices.push_back(index + 0);
+			}
+		}
+		
+		g_meshes["floor"] = new Mesh(floorMD);
+		ModelInstance floorMI;
+		floorMI.asset = new ModelAsset();
+		floorMI.asset->mesh = g_meshes["floor"];
+		floorMI.asset->material = &g_materials["default"];
+		floorMI.transform.position.y = -0.5;
+		g_instances.push_back(floorMI);
 	}
 
 	INTERNAL void loadInstances()
@@ -193,22 +232,14 @@ namespace Game
 		a.transform.position = { 0, 0, 0 };
 		g_instances.push_back(a);
 
-		int mapSize = 3;
-		for (int i = -mapSize; i <= mapSize; i++)
-		{
-			for (int j = -mapSize; j <= mapSize; j++)
-			{
-				ModelInstance f;
-				f.asset = &g_floor;
-				f.transform.position = { (f32)i, -0.5f, (f32)j };
-				g_instances.push_back(f);
-			}
-		}
+		generateWorld();
 
 		g_camera.transform.position = { 0, 2, 7 };
 		g_camera.lookAt({ 0, 0, 0 });
 		g_camera.projectionType = ProjectionType::Perspective;
 		g_camera.fieldOfView = Degree(50.0f);
+		//g_camera.projectionType = ProjectionType::Orthographic;
+		//g_camera.orthoScale = 1.0f;
 	}
 
 	INTERNAL void update(f32 dt)
@@ -355,9 +386,9 @@ namespace Game
 				player.transform.position += playerVel * velDir * dt;
 
 			{
-#if 1 // Billboard
+#if 0 // Billboard
 				player.transform.orientation = conjugate(quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 1, 0 }));
-#elif 1 // Billboard fixed y axis
+#elif 0 // Billboard fixed y axis
 				Vector3 f = player.transform.position - g_camera.transform.position;
 				
 				f.y = 0;
@@ -375,6 +406,8 @@ namespace Game
 #endif
 			}
 		}
+		g_camera.transform.position.x = player.transform.position.x;
+		g_camera.lookAt(player.transform.position);
 		g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
 
 	}
@@ -382,30 +415,15 @@ namespace Game
 	INTERNAL void renderInstance(const ModelInstance& inst)
 	{
 		ModelAsset* asset = inst.asset;
-		ShaderProgram* shaders = asset->shaders;
+		ShaderProgram* shaders = asset->material->shaders;
 
 		shaders->setUniform("u_camera", g_camera.getMatrix());
 		shaders->setUniform("u_transform", inst.transform);
 		shaders->setUniform("u_tex", (Dunjun::u32)0);
 
-		asset->texture->bind(0);
+		asset->material->texture->bind(0);
 
-		glBindBuffer(GL_ARRAY_BUFFER, inst.asset->vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, inst.asset->ibo);
-
-		glEnableVertexAttribArray(0); //vertPosition
-		glEnableVertexAttribArray(1); //vertColor
-		glEnableVertexAttribArray(2); //vertTexCoord
-
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
-		glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3)));
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Dunjun::Vector3) + sizeof(Dunjun::Color)));
-
-		glDrawElements(asset->drawType, asset->drawCount, GL_UNSIGNED_INT, nullptr);
-
-		glDisableVertexAttribArray(0); //vertPosition
-		glDisableVertexAttribArray(1); //vertColor
-		glDisableVertexAttribArray(2); //vertTexCoord
+		asset->mesh->draw();
 	}
 
 	INTERNAL void render()
@@ -420,12 +438,12 @@ namespace Game
 
 		for (const auto& inst : g_instances)
 		{
-			if (inst.asset->shaders != currentShaders)
+			if (inst.asset->material->shaders != currentShaders)
 			{
 				if (currentShaders)
 					currentShaders->stopUsing();
 
-				currentShaders = inst.asset->shaders;
+				currentShaders = inst.asset->material->shaders;
 				currentShaders->use();
 			}
 			renderInstance(inst);
@@ -472,6 +490,7 @@ namespace Game
 		glDepthFunc(GL_LEQUAL);
 
 		loadShaders();
+		loadMaterials();
 		loadFloorAsset();
 		loadSpriteAsset();
 		loadInstances();
@@ -504,6 +523,15 @@ namespace Game
 				handleInput(&running, &fullscreen);
 				Input::updateGamepads();
 				update(TIME_STEP);
+			}
+
+			if (tc.update(0.5))
+			{
+				titleStream.str("");
+				titleStream.clear();
+				titleStream << windowTitle << " - " << 1000.0 / tc.getTickRate()
+					<< " ms";
+				glfwSetWindowTitle(window, titleStream.str().c_str());
 			}
 
 			render();

@@ -9,6 +9,13 @@
 
 namespace Dunjun
 {
+	enum class AttribLocation : u32
+	{
+		Position = 0,
+		TexCoord = 1,
+		Color = 2,
+	};
+
 class Mesh
 {
 public:
@@ -25,11 +32,9 @@ public:
 
 	virtual ~Mesh() { destroy(); }
 
-	void generate();
-
-	void draw();
-
-
+	void addData(const Data& data);
+	void generate() const;
+	void draw() const;
 
 
 	inline void destroy() const
@@ -41,7 +46,7 @@ public:
 
 private:
 	Data m_data;
-	b32 m_generated;
+	mutable b32 m_generated;
 	
 	GLuint m_vbo;
 	GLuint m_ibo;

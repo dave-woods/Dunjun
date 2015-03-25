@@ -64,6 +64,10 @@ namespace Dunjun
 		{
 			m = perspective(fieldOfView, viewportAspectRatio, nearPlane, farPlane);
 		}
+		else if (projectionType == ProjectionType::InfinitePerspective)
+		{
+			m = infinitePerspective(fieldOfView, viewportAspectRatio, nearPlane);
+		}
 		else if (projectionType == ProjectionType::Orthographic)
 		{
 			f32 distance = 0.5 * (farPlane - nearPlane);
