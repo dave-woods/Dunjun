@@ -74,6 +74,7 @@
     <ClCompile Include="src\Dunjun\Camera.cpp" />
     <ClCompile Include="src\Dunjun\Game.cpp" />
     <ClCompile Include="src\Dunjun\Input.cpp" />
+    <ClCompile Include="src\Dunjun\Level.cpp" />
     <ClCompile Include="src\Dunjun\Math\Matrix4.cpp" />
     <ClCompile Include="src\Dunjun\Math\Constants.cpp" />
     <ClCompile Include="src\Dunjun\Math\Functions\Transform.cpp" />
@@ -113,6 +114,9 @@
     <ClInclude Include="include\Dunjun\Types.hpp" />
     <ClInclude Include="include\Dunjun\Math\Quaternion.hpp" />
     <ClInclude Include="include\Dunjun\Vertex.hpp" />
+    <ClInclude Include="include\Dunjun\Level.hpp" />
+    <ClInclude Include="include\Dunjun\Material.hpp" />
+    <ClInclude Include="include\Dunjun\ModelAsset.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\default.frag.glsl" />

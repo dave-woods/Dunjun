@@ -2,20 +2,16 @@
 
 #include <Dunjun/OpenGL.hpp>
 #include <Dunjun/Common.hpp>
-#include <Dunjun/ShaderProgram.hpp>
-#include <Dunjun/Image.hpp>
-#include <Dunjun/Texture.hpp>
 
 #include <Dunjun/Input.hpp>
 
 #include <Dunjun/Clock.hpp>
 #include <Dunjun/TickCounter.hpp>
 
-#include <Dunjun/Vertex.hpp>
 #include <Dunjun/Math.hpp>
-#include <Dunjun/Transform.hpp>
 #include <Dunjun/Camera.hpp>
-#include <Dunjun/Mesh.hpp>
+#include <Dunjun/ModelAsset.hpp>
+#include <Dunjun/Level.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -28,18 +24,6 @@
 
 namespace Dunjun
 {
-struct Material
-{
-	ShaderProgram* shaders;
-	Texture* texture;
-};
-
-struct ModelAsset
-{
-	const Material* material;
-	const Mesh* mesh;
-};
-
 struct ModelInstance
 {
 	ModelAsset* asset;
@@ -52,7 +36,7 @@ namespace
 	GLFWwindow* window;
 	int windowWidth = 854;
 	int windowHeight = 480;
-	const char* windowTitle = "Dunjun v0.0.36";
+	const char* windowTitle = "Dunjun v0.0.37";
 } // anonymous
 
 GLOBAL ShaderProgram* g_defaultShader;
@@ -61,6 +45,8 @@ GLOBAL std::vector<ModelInstance> g_instances;
 GLOBAL Camera g_camera;
 GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
+
+GLOBAL Level g_level;
 
 namespace Game
 {
@@ -131,9 +117,9 @@ namespace Game
 
 	INTERNAL void loadMaterials()
 	{
-		g_materials["batman"].shaders = g_defaultShader;
-		g_materials["batman"].texture = new Texture();
-		g_materials["batman"].texture->loadFromFile("data/textures/character.png", TextureFilter::Nearest);
+		g_materials["character"].shaders = g_defaultShader;
+		g_materials["character"].texture = new Texture();
+		g_materials["character"].texture->loadFromFile("data/textures/rudy.png", TextureFilter::Nearest);
 
 		g_materials["default"].shaders = g_defaultShader;
 		g_materials["default"].texture = new Texture();
@@ -166,116 +152,47 @@ namespace Game
 
 		g_meshes["sprite"] = new Mesh(meshData);
 
-		g_sprite.material = &g_materials["batman"];
+		g_sprite.material = &g_materials["character"];
 		g_sprite.mesh = g_meshes["sprite"];
-	}
-
-	enum class TileSurfaceFace : u32
-	{
-		Right = 0,
-		Left = 1,
-		Up = 2,
-		Down = 3,
-		Front = 4,
-		Back = 5,
-	};
-
-	INTERNAL void addTileSurface(Mesh::Data* data, const Vector3& position, TileSurfaceFace face, const Vector2& tilePos)
-	{
-		const f32 tileWidth = 1.0f / 16.0f;
-		const f32 tileHeight = 1.0f / 16.0f;
-		usize index = data->vertices.size();
-
-		// Right-Left
-		if ((u32)face / 2 == 0)
-		{
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		}
-		// Up-Down
-		else if ((u32)face / 2 == 1)
-		{
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		}
-		// Front-Back
-		else if ((u32)face / 2 == 2)
-		{
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 1.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			data->vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-		}
-
-		if ((u32)face % 2 == 0)
-		{
-			data->indices.push_back(index + 0);
-			data->indices.push_back(index + 1);
-			data->indices.push_back(index + 2);
-			data->indices.push_back(index + 2);
-			data->indices.push_back(index + 3);
-			data->indices.push_back(index + 0);
-		}
-		else
-		{
-			data->indices.push_back(index + 0);
-			data->indices.push_back(index + 3);
-			data->indices.push_back(index + 2);
-			data->indices.push_back(index + 2);
-			data->indices.push_back(index + 1);
-			data->indices.push_back(index + 0);
-		}
-	}
-
-	INTERNAL void addTileSurface(Mesh::Data* data, const Vector3& position, TileSurfaceFace face, const std::vector<Vector2>& randomTilePosSet)
-	{
-		usize length = randomTilePosSet.size();
-		Vector2 tilePos = randomTilePosSet[rand() % length];
-		addTileSurface(data, position, face, tilePos);
 	}
 
 	INTERNAL void generateWorld()
 	{
-		Mesh::Data floorMD;
-
+		g_level.material = &g_materials["terrain"];
+		
 		int mapWidth = 16;
 		int mapDepth = 16;
 		int mapHeight = 3;
 
-		Vector2 lightWoodTile(0, 11);
-		std::vector<Vector2> stoneTiles;
-		for (int i = 3; i < 11; i++)
-			stoneTiles.emplace_back(Vector2(i, 15));
+		Level::TileId lightWoodTile = { 0, 11 };
+		Level::RandomTileSet stoneTiles;
+		for (int i = 0; i < 2; i++)
+			stoneTiles.emplace_back(Level::TileId{ i, 15 });
 
 		for (int i = 0; i < mapWidth; i++)
 			for (int j = 0; j < mapDepth; j++)
-				addTileSurface(&floorMD, Vector3( i, 0, j ), TileSurfaceFace::Up, lightWoodTile);
+				g_level.addTileSurface(Vector3(i, 0, j), Level::TileSurfaceFace::Up, lightWoodTile);
 
 		for (int k = 0; k < mapHeight; k++)
 		{
 			for (int j = 0; j < mapDepth; j++)
-				addTileSurface(&floorMD, Vector3(0, k, j), TileSurfaceFace::Right, stoneTiles);
+				g_level.addTileSurface(Vector3(0, k, j), Level::TileSurfaceFace::Right, stoneTiles);
 
 			for (int j = 0; j < mapDepth; j++)
-				addTileSurface(&floorMD, Vector3(mapWidth, k, j), TileSurfaceFace::Left, stoneTiles);
+				g_level.addTileSurface(Vector3(mapWidth, k, j), Level::TileSurfaceFace::Left, stoneTiles);
 
 			for (int i = 0; i < mapWidth; i++)
-				addTileSurface(&floorMD, Vector3(i, k, 0), TileSurfaceFace::Front, stoneTiles);
+				g_level.addTileSurface(Vector3(i, k, 0), Level::TileSurfaceFace::Front, stoneTiles);
 
 			for (int i = 0; i < mapWidth; i++)
-				addTileSurface(&floorMD, Vector3(i, k, mapDepth), TileSurfaceFace::Back, stoneTiles);
+				g_level.addTileSurface(Vector3(i, k, mapDepth), Level::TileSurfaceFace::Back, stoneTiles);
 		}
+		
+		g_level.generate();
 
-		g_meshes["floor"] = new Mesh(floorMD);
-		ModelInstance floorMI;
-		floorMI.asset = new ModelAsset();
-		floorMI.asset->mesh = g_meshes["floor"];
-		floorMI.asset->material = &g_materials["terrain"];
-		g_instances.push_back(floorMI);
+		//ModelInstance level;
+		
+		//g_instances.push_back(level);
 	}
 
 	INTERNAL void loadInstances()
@@ -409,13 +326,33 @@ namespace Game
 			Vector3 camPos = { 0, 0, 0 };
 			
 			if (Input::isKeyPressed(Input::Key::A))
-				camPos += {-1, 0, 0};
+			{
+				Vector3 f = g_camera.left();
+				f.y = 0;
+				f = normalize(f);
+				camPos += f;
+			}
 			if (Input::isKeyPressed(Input::Key::D))
-				camPos += {+1, 0, 0};
+			{
+				Vector3 f = g_camera.right();
+				f.y = 0;
+				f = normalize(f);
+				camPos += f;
+			}
 			if (Input::isKeyPressed(Input::Key::W))
-				camPos += {0, 0, -1};
+			{
+				Vector3 f = g_camera.forward();
+				f.y = 0;
+				f = normalize(f);
+				camPos += f;
+			}
 			if (Input::isKeyPressed(Input::Key::S))
-				camPos += {0, 0, +1};
+			{
+				Vector3 f = g_camera.backward();
+				f.y = 0;
+				f = normalize(f);
+				camPos += f;
+			}
 			if (Input::isKeyPressed(Input::Key::LControl))
 				camPos += {0, -1, 0};
 			if (Input::isKeyPressed(Input::Key::LShift))
@@ -448,7 +385,7 @@ namespace Game
 			{
 #if 0 // Billboard
 				player.transform.orientation = conjugate(quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 1, 0 }));
-#elif 0 // Billboard fixed y axis
+#elif 1// Billboard fixed y axis
 				Vector3 f = player.transform.position - g_camera.transform.position;
 				
 				f.y = 0;
@@ -458,7 +395,7 @@ namespace Game
 				{
 					Radian a(-std::atan(f.z / f.x));
 					a += Radian(Constants::TAU / 4.0f);
-					if (f.x < 0)
+					if (f.x >= 0)
 						a -= Radian(Constants::TAU / 2.0f);
 
 					player.transform.orientation = angleAxis(a, { 0, 1, 0 });
@@ -484,17 +421,29 @@ namespace Game
 		asset->mesh->draw();
 	}
 
+	INTERNAL void renderLevel(const Level& level)
+	{
+		ShaderProgram* shaders = level.material->shaders;
+
+		shaders->setUniform("u_camera", g_camera.getMatrix());
+		shaders->setUniform("u_transform", level.transform);
+		shaders->setUniform("u_tex", (Dunjun::u32)0);
+
+		level.mesh->draw();
+	}
+
 	INTERNAL void render()
 	{
 		glViewport(0, 0, windowWidth, windowHeight);
 
 		/*Default pixel value (background colour)*/
-		glClearColor(0, 0, 0, 1.0f);
+		glClearColor(33.0f / 256.0f, 28.0f / 256.0f, 24.0f / 256.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		const ShaderProgram* currentShaders = nullptr;
 		const Texture* currentTexture = nullptr;
 
+		//Instances
 		for (const auto& inst : g_instances)
 		{
 			if (inst.asset->material->shaders != currentShaders)
@@ -514,6 +463,28 @@ namespace Game
 
 			renderInstance(inst);
 		}
+
+		//Level
+		{
+			if (g_level.material->shaders != currentShaders)
+			{
+				if (currentShaders)
+					currentShaders->stopUsing();
+
+				currentShaders = g_level.material->shaders;
+				currentShaders->use();
+			}
+
+			if (g_level.material->texture != currentTexture)
+			{
+				currentTexture = g_level.material->texture;
+				Texture::bind(currentTexture, 0);
+			}
+
+			renderLevel(g_level);
+		}
+
+
 
 		if (currentShaders)
 			currentShaders->stopUsing();
@@ -550,7 +521,7 @@ namespace Game
 		Input::setup();
 
 		Input::setCursorPosition({ 0, 0 });
-		//Input::setCursorMode(Input::CursorMode::Disabled);
+		Input::setCursorMode(Input::CursorMode::Disabled);
 
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
