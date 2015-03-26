@@ -82,7 +82,6 @@ namespace Dunjun
 			addTileSurface(position, face, randomTilePosSet[0]);
 			return;
 		}
-		usize length = randomTilePosSet.size();
 		TileId tilePos = randomTilePosSet[rand() % length];
 		addTileSurface(position, face, tilePos);
 	}
