@@ -82,6 +82,7 @@
     <ClCompile Include="src\Dunjun\Texture.cpp" />
     <ClCompile Include="src\Dunjun\Image.cpp" />
     <ClCompile Include="src\Dunjun\ShaderProgram.cpp" />
+    <ClCompile Include="src\Dunjun\Window.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +118,7 @@
     <ClInclude Include="include\Dunjun\Level.hpp" />
     <ClInclude Include="include\Dunjun\Material.hpp" />
     <ClInclude Include="include\Dunjun\ModelAsset.hpp" />
+    <ClInclude Include="include\Dunjun\Window.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\default.frag.glsl" />

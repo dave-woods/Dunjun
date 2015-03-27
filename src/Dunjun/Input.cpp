@@ -1,5 +1,5 @@
 #include <Dunjun/Input.hpp>
-
+#include <Dunjun/Window.hpp>
 #include <Dunjun/Game.hpp>
 
 #define VC_EXTRALEAN
@@ -17,19 +17,8 @@ namespace Dunjun
 	{
 		GLOBAL std::array < XINPUT_STATE, Gamepad_MaxCount > g_gamepadStates;
 		
-		/*GLOBAL f64 g_scrollX = 0;
-		GLOBAL f64 g_scrollY = 0;
-
-		void scrollCallback(GLFWwindow* window, f64 offsetX, f64 offsetY)
-		{
-			g_scrollX = offsetX;
-			g_scrollY = offsetY;
-		}*/
-
 		void setup()
 		{
-			// glfwSetScrollCallback(Game::getGlfwWindow(), scrollCallback);
-
 			for (int i = 0; i < Gamepad_MaxCount; i++)
 			{
 				memset(&g_gamepadStates[i], 0, sizeof(XINPUT_STATE));
@@ -53,21 +42,21 @@ namespace Dunjun
 		void setCursorMode(CursorMode mode)
 		{
 			if (mode == CursorMode::Normal)
-				glfwSetInputMode(Game::getGlfwWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			if (mode == CursorMode::Hidden)
-				glfwSetInputMode(Game::getGlfwWindow(), GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 			if (mode == CursorMode::Disabled)
-				glfwSetInputMode(Game::getGlfwWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 
 		void setStickyKeys(bool stickyKeys)
 		{
-			glfwSetInputMode(Game::getGlfwWindow(), GLFW_STICKY_KEYS, stickyKeys);
+			glfwSetInputMode(Window::ptr, GLFW_STICKY_KEYS, stickyKeys);
 		}
 
 		void setStickyMouseButtons(bool stickyMouseButtons)
 		{
-			glfwSetInputMode(Game::getGlfwWindow(), GLFW_STICKY_MOUSE_BUTTONS, stickyMouseButtons);
+			glfwSetInputMode(Window::ptr, GLFW_STICKY_MOUSE_BUTTONS, stickyMouseButtons);
 		}
 	
 		bool isKeyPressed(Key key)
@@ -393,19 +382,19 @@ namespace Dunjun
 			if (code == 0)
 				return false;
 
-			return static_cast<bool>(glfwGetKey(Game::getGlfwWindow(), code));
+			return static_cast<bool>(glfwGetKey(Window::ptr, code));
 		}
 
 		Vector2 getCursorPosition()
 		{
 			f64 x, y;
-			glfwGetCursorPos(Game::getGlfwWindow(), &x, &y);
+			glfwGetCursorPos(Window::ptr, &x, &y);
 			return Vector2(x, y);
 		}
 
 		void setCursorPosition(const Vector2& position)
 		{
-			glfwSetCursorPos(Game::getGlfwWindow(), static_cast<f64>(position.x), static_cast<f64>(position.y));
+			glfwSetCursorPos(Window::ptr, static_cast<f64>(position.x), static_cast<f64>(position.y));
 		}
 
 		/*Vector2 getScrollOffset()
@@ -415,7 +404,7 @@ namespace Dunjun
 
 		bool isMouseButtonPressed(Mouse button)
 		{
-			return static_cast<bool>(glfwGetMouseButton(Game::getGlfwWindow(), (int)button));
+			return static_cast<bool>(glfwGetMouseButton(Window::ptr, (int)button));
 		}
 
 		f64 getTime()
@@ -518,12 +507,12 @@ namespace Dunjun
 
 		std::string getClipboardString()
 		{
-			return glfwGetClipboardString(Game::getGlfwWindow());
+			return glfwGetClipboardString(Window::ptr);
 		}
 
 		void setClipboardString(const std::string& str)
 		{
-			glfwSetClipboardString(Game::getGlfwWindow(), str.c_str());
+			glfwSetClipboardString(Window::ptr, str.c_str());
 		}
 
 	} // namespace Input

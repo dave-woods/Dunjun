@@ -3,9 +3,6 @@
 
 #include <Dunjun/Math.hpp>
 
-#include <Dunjun/OpenGL.hpp>
-#include <GLFW/glfw3.h>
-
 namespace Dunjun
 {
 namespace Game
@@ -14,8 +11,7 @@ namespace Game
 	void run();
 	void cleanup();
 
-	GLFWwindow* getGlfwWindow();
-	Vector2 getWindowSize();
+	void glInit();
 } //namespace Game
 } //namespace Dunjun
 

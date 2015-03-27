@@ -1,8 +1,8 @@
 #include <Dunjun/Game.hpp>
 
-#include <Dunjun/OpenGL.hpp>
 #include <Dunjun/Common.hpp>
 
+#include <Dunjun/Window.hpp>
 #include <Dunjun/Input.hpp>
 
 #include <Dunjun/Clock.hpp>
@@ -32,11 +32,9 @@ struct ModelInstance
 
 namespace
 {
-	const f32 TIME_STEP = (1.0f / 60.0f);
-	GLFWwindow* window;
-	int windowWidth = 854;
-	int windowHeight = 480;
-	const char* windowTitle = "Dunjun v0.0.37";
+	GLOBAL const char* default_windowTitle = "Dunjun v0.0.37";
+	GLOBAL const f32 TIME_STEP = (1.0f / 60.0f);
+	GLOBAL bool g_running = true;
 } // anonymous
 
 GLOBAL ShaderProgram* g_defaultShader;
@@ -50,52 +48,33 @@ GLOBAL Level g_level;
 
 namespace Game
 {
-	INTERNAL void glfwHints()
+	INTERNAL void handleInput()
 	{
-		glfwDefaultWindowHints();
-		glfwWindowHint(GLFW_VERSION_MAJOR, 2);
-		glfwWindowHint(GLFW_VERSION_MINOR, 1);
-		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-	}
+		if (Window::shouldClose() || Input::isKeyPressed(Input::Key::Escape))
+			g_running = false;
 
-	INTERNAL void resizeCallback(GLFWwindow* window, int width, int height)
-	{
-		windowWidth = width;
-		windowHeight = height;
-	}
-
-	INTERNAL void handleInput(bool* running, bool* fullscreen)
-	{
-		if (glfwWindowShouldClose(window) || Input::isKeyPressed(Input::Key::Escape))
-			*running = false;
-
-
-		// Fullscreen DISABLED due to crashes
-		/*
-		if (Input::getKey(GLFW_KEY_F11))
+		if (Input::isKeyPressed(Input::Key::F11))
 		{
-		*fullscreen = !(*fullscreen);
+			Window::isFullscreen = !Window::isFullscreen;
+			if (Window::isFullscreen)
+			{
+				GLFWwindow* w = Window::createWindow(glfwGetPrimaryMonitor());
+				Window::destroyWindow();
+				Window::ptr = w;
+			}
+			else
+			{
+				GLFWwindow* w = Window::createWindow(nullptr);
+				Window::destroyWindow();
+				Window::ptr = w;
+			}
 
-		GLFWwindow* newWindow;
-		glfwHints();
-		if (*fullscreen)
-		{
-		/*Get number of modes
-		int count;
-		/*Getting the monitors width and height
-		const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
+			Window::makeContextCurrent();
+			Window::swapInterval(1);
 
-		newWindow = glfwCreateWindow(modes[count - 1].width, modes[count - 1].height, windowTitle, glfwGetPrimaryMonitor(), window);
+			//Initial OpenGL settings
+			glInit();
 		}
-		else
-		{
-		newWindow = glfwCreateWindow(g_windowWidth, g_windowHeight, windowTitle, nullptr, window);
-		}
-		glfwDestroyWindow(window);
-		window = newWindow;
-		glfwMakeContextCurrent(window);
-		}
-		*/
 	}
 
 	INTERNAL void loadShaders()
@@ -223,7 +202,6 @@ namespace Game
 		/*{
 			if (Input::isGamepadPresent(Input::Gamepad_1))
 			{
-				std::cout << "GAMEPAD DETECTED" << std::endl;
 				Input::GamepadAxes axes = Input::getGamepadAxes(Input::Gamepad_1);
 
 				const f32 lookSensitivity = 2.0f;
@@ -241,9 +219,7 @@ namespace Game
 				if (std::abs(lts.x) < deadZone)
 					lts.x = 0;
 				if (std::abs(lts.y) < deadZone)
-					lts.y = 0;
-
-				lts.y = -lts.y; //xbox thumbstick has inverted y mapping
+					lts.y = 0
 
 				if (length(lts) > 1.0f)
 					lts = normalize(lts);
@@ -260,11 +236,11 @@ namespace Game
 
 				if (buttons[(usize)Input::XboxButton::RightShoulder])
 				{
-					velDir += {0, 1, 0};
+					velDir.y += 1;
 				}
 				if (buttons[(usize)Input::XboxButton::LeftShoulder])
 				{
-					velDir += {0, -1, 0};
+					velDir.y -= 1;
 				}
 
 				if (buttons[(usize)Input::XboxButton::DpadUp])
@@ -323,6 +299,7 @@ namespace Game
 			//negative mouseSensitivity for inverted
 			g_camera.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
 			Input::setCursorPosition({ 0, 0 });
+			Input::setCursorMode(Input::CursorMode::Disabled); // Problem - this fixes, sort of?
 			Vector3 camPos = { 0, 0, 0 };
 			
 			if (Input::isKeyPressed(Input::Key::A))
@@ -385,7 +362,7 @@ namespace Game
 			{
 #if 0 // Billboard
 				player.transform.orientation = conjugate(quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 1, 0 }));
-#elif 1// Billboard fixed y axis
+#elif 0// Billboard fixed y axis
 				Vector3 f = player.transform.position - g_camera.transform.position;
 				
 				f.y = 0;
@@ -405,8 +382,10 @@ namespace Game
 		}
 		//g_camera.transform.position.x = player.transform.position.x;
 		//g_camera.lookAt(player.transform.position);
-		g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
-
+		//g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
+		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
+		if (aspectRatio && Window::getFramebufferSize().y > 0)
+			g_camera.viewportAspectRatio = aspectRatio;
 	}
 
 	INTERNAL void renderInstance(const ModelInstance& inst)
@@ -434,10 +413,12 @@ namespace Game
 
 	INTERNAL void render()
 	{
-		glViewport(0, 0, windowWidth, windowHeight);
-
-		/*Default pixel value (background colour)*/
-		glClearColor(33.0f / 256.0f, 28.0f / 256.0f, 24.0f / 256.0f, 1.0f);
+		{
+			Vector2 fbSize = Window::getFramebufferSize();
+			glViewport(0, 0, fbSize.x, fbSize.y);
+		}
+		
+		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		const ShaderProgram* currentShaders = nullptr;
@@ -484,49 +465,25 @@ namespace Game
 			renderLevel(g_level);
 		}
 
-
-
 		if (currentShaders)
 			currentShaders->stopUsing();
 		
 		Texture::bind(nullptr, 0);
 
-		/*Swap front and back buffers*/
-		glfwSwapBuffers(window);
-		/*Poll for and process events*/
-		glfwPollEvents();
+		Window::swapBuffers();
 	}
 
 	void init()
 	{
-		if (!glfwInit())
+		if (!Window::init())
 			return;
-
-		glfwHints();
-			
-		window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, nullptr, nullptr);
-		if (!window)
-		{
-			glfwTerminate();
-			return;
-		}
-
-		glfwSetWindowSizeCallback(window, resizeCallback);
-
-		glfwMakeContextCurrent(window);
-		glfwSwapInterval(1);
 
 		glewInit();
-
+		glInit();
+		
 		Input::setup();
-
 		Input::setCursorPosition({ 0, 0 });
 		Input::setCursorMode(Input::CursorMode::Disabled);
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
 
 		loadShaders();
 		loadMaterials();
@@ -536,9 +493,6 @@ namespace Game
 
 	void run()
 	{
-		bool fullscreen = false;
-		bool running = true;
-
 		std::stringstream titleStream;
 
 		TickCounter tc;
@@ -547,18 +501,23 @@ namespace Game
 		f64 accumulator = 0;
 		f64 prevTime = Input::getTime();
 
-		while (running)
+		while (g_running)
 		{
+			Window::makeContextCurrent();
+
 			f64 currentTime = Input::getTime();
 			f64 dt = currentTime - prevTime;
 			prevTime = currentTime;
 			accumulator += dt;
 
+			if (accumulator > 1.2f) // Remove "loop of death"... (fullscreen)
+				accumulator = 1.2f;
 
 			while (accumulator >= TIME_STEP)
 			{
 				accumulator -= TIME_STEP;
-				handleInput(&running, &fullscreen);
+				Window::pollEvents();
+				handleInput();
 				Input::updateGamepads();
 				update(TIME_STEP);
 			}
@@ -567,9 +526,8 @@ namespace Game
 			{
 				titleStream.str("");
 				titleStream.clear();
-				titleStream << windowTitle << " - " << 1000.0 / tc.getTickRate()
-					<< " ms";
-				glfwSetWindowTitle(window, titleStream.str().c_str());
+				titleStream << default_windowTitle << " - " << 1000.0 / tc.getTickRate() << " ms";
+				Window::setTitle(titleStream.str().c_str());
 			}
 
 			render();
@@ -584,18 +542,16 @@ namespace Game
 	void cleanup()
 	{
 		Input::cleanup();
-		glfwDestroyWindow(window);
-		glfwTerminate();
+		Window::cleanup();
 	}
 
-	GLFWwindow* getGlfwWindow()
+	void glInit()
 	{
-		return window;
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 	}
-
-	Vector2 getWindowSize()
-	{
-		return Vector2(windowWidth, windowHeight);
-	}
+	
 } //namespace Game
 } //namespace Dunjun
