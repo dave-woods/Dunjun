@@ -8,14 +8,4 @@ Following an online tutorial, found [here](https://www.youtube.com/watch?v=fRUYl
 
 This is NOT original code, and I do not claim ownership of the idea, nor the code itself.
 
-
-Progress To Date
-----------------
-
-* Setup Visual Studio for use with project
-* Added GLFW to project, and created basic windowing functionality
-* Enabled drawing triangles
-* Temporarily included dynamic colour changing (08/03/15 17:16)
-* Added shader program and rendered rectangle in colour
-* Added textures and image loading
-* Added Image and Texture wrapper classes
+I intend to use this as a platform which I can base my own projects on in the future, when I have more experience with C++.
