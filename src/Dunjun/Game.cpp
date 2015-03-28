@@ -138,40 +138,7 @@ namespace Game
 	INTERNAL void generateWorld()
 	{
 		g_level.material = &g_materials["terrain"];
-		
-		int mapWidth = 16;
-		int mapDepth = 16;
-		int mapHeight = 3;
-
-		Level::TileId lightWoodTile = { 0, 11 };
-		Level::RandomTileSet stoneTiles;
-		for (int i = 0; i < 2; i++)
-			stoneTiles.emplace_back(Level::TileId{ i, 15 });
-
-		for (int i = 0; i < mapWidth; i++)
-			for (int j = 0; j < mapDepth; j++)
-				g_level.addTileSurface(Vector3(i, 0, j), Level::TileSurfaceFace::Up, lightWoodTile);
-
-		for (int k = 0; k < mapHeight; k++)
-		{
-			for (int j = 0; j < mapDepth; j++)
-				g_level.addTileSurface(Vector3(0, k, j), Level::TileSurfaceFace::Right, stoneTiles);
-
-			for (int j = 0; j < mapDepth; j++)
-				g_level.addTileSurface(Vector3(mapWidth, k, j), Level::TileSurfaceFace::Left, stoneTiles);
-
-			for (int i = 0; i < mapWidth; i++)
-				g_level.addTileSurface(Vector3(i, k, 0), Level::TileSurfaceFace::Front, stoneTiles);
-
-			for (int i = 0; i < mapWidth; i++)
-				g_level.addTileSurface(Vector3(i, k, mapDepth), Level::TileSurfaceFace::Back, stoneTiles);
-		}
-		
 		g_level.generate();
-
-		//ModelInstance level;
-		
-		//g_instances.push_back(level);
 	}
 
 	INTERNAL void loadInstances()

@@ -15,6 +15,73 @@ namespace Dunjun
 		if (!mesh)
 			mesh = new Mesh();
 
+		mapGrid = std::vector<std::vector<TileId>>(mapWidth, std::vector<TileId>(mapHeight));
+
+		srand(1);
+
+		TileId lightWoodTile = { 0, 11 };
+		TileId darkWoodTile = { 0, 10 };
+		TileId blankTile = { -1, -1 };
+		RandomTileSet stoneTiles;
+		for (int i = 1; i < 3; i++)
+			stoneTiles.emplace_back(i, 15);
+		RandomTileSet darkRockTiles;
+		for (int i = 0; i < 4; i++)
+			darkRockTiles.emplace_back(i, 0);
+
+		for (int i = 0; i < mapWidth; i++)
+		{
+			for (int j = 0; j < mapHeight; j++)
+			{
+				if (rand() % 100 > 20)
+					mapGrid[i][j] = lightWoodTile;
+				else
+					mapGrid[i][j] = blankTile;
+			}
+		}
+
+		for (int i = 0; i < mapWidth; i++)
+		{
+			for (int j = 0; j < mapHeight; j++)
+			{
+				if (mapGrid[i][j] != blankTile)
+				{
+					addTileSurface(Vector3(i, 0, j), TileSurfaceFace::Up, mapGrid[i][j]);
+					addTileSurface(Vector3(i, mapDepth, j), TileSurfaceFace::Down, darkRockTiles);
+				}
+
+				for (int k = 0; k < mapDepth; k++)
+				{
+					if (mapGrid[i][j] == blankTile)
+					{
+						if (i > 0)
+							if (mapGrid[i - 1][j] != blankTile)
+								addTileSurface(Vector3(i, k, j), TileSurfaceFace::Left, stoneTiles);
+						if (i < mapWidth - 1)
+							if (mapGrid[i + 1][j] != blankTile)
+								addTileSurface(Vector3(i + 1, k, j), TileSurfaceFace::Right, stoneTiles);
+						if (j > 0)
+							if (mapGrid[i][j - 1] != blankTile)
+								addTileSurface(Vector3(i, k, j), TileSurfaceFace::Back, stoneTiles);
+						if (j < mapHeight - 1)
+							if (mapGrid[i][j + 1] != blankTile)
+								addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Front, stoneTiles);
+					}
+					else
+					{
+						if (i == 0)
+							addTileSurface(Vector3(i, k, j), TileSurfaceFace::Right, stoneTiles);
+						if (i == mapWidth - 1)
+							addTileSurface(Vector3(i + 1, k, j), TileSurfaceFace::Left, stoneTiles);
+						if (j == 0)
+							addTileSurface(Vector3(i, k, j), TileSurfaceFace::Front, stoneTiles);
+						if (j == mapHeight - 1)
+							addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Back, stoneTiles);
+					}
+				}
+			}
+		}
+
 		mesh->addData(m_meshData);
 	}
 
