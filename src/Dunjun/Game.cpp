@@ -145,19 +145,32 @@ namespace Game
 
 	INTERNAL void loadInstances()
 	{
-		//Transform parent;
-
-		ModelInstance a;
-		a.asset = &g_sprite;
-		a.transform.position = { 4, 0.5, 4 };
-		a.transform.scale = { 1, 1, 1 };
-		g_instances.push_back(a);
-
 		generateWorld();
+
+		ModelInstance player;
+		player.asset = &g_sprite;
+		player.transform.position = { 4, 0.5, 4 };
+		player.transform.scale = { 1, 1, 1 };
+
+		{
+			bool escape = false;
+			for (int j = 0; j < g_level.mapHeight && !escape; j++)
+			{
+				for (int i = 0; i < g_level.mapWidth && !escape; i++)
+				{
+					if (g_level.mapGrid[i][j] != Level::TileId(-1, -1))
+					{
+						player.transform.position = Vector3(i, 0.5, j);
+						escape = true;
+					}
+				}
+			}
+		}
+		g_instances.push_back(player);
 
 		//g_cameraPlayer.viewportAspectRatio = 16.0f / 9.0f;
 
-		g_cameraPlayer.transform.position = { 4, 7, 14 };
+		g_cameraPlayer.transform.position = { -4, 7, 14 };
 		g_cameraPlayer.lookAt({ 4, 0, 0 });
 		g_cameraPlayer.projectionType = ProjectionType::Perspective;
 		g_cameraPlayer.fieldOfView = Degree(50.0f);
@@ -182,7 +195,7 @@ namespace Game
 	{
 		ModelInstance& player = g_instances[0];
 
-		f32 camVel = 5.0f;
+		f32 camVel = 10.0f;
 
 		// Gamepad stuff
 		/*{
@@ -285,9 +298,18 @@ namespace Game
 			//negative mouseSensitivity for inverted
 			g_cameraWorld.offsetOrientation(-mouseSensitivity * Radian(curPos.x * dt), -mouseSensitivity * Radian(curPos.y * dt));
 			Input::setCursorPosition({ 0, 0 });
-			Input::setCursorMode(Input::CursorMode::Disabled); // Problem - this fixes, sort of?
+			Input::setCursorMode(Input::CursorMode::Disabled); // Problem in fullscreen - this fixes it, sort of?
 			Vector3 camPos = { 0, 0, 0 };
 
+			f32 superspeed;
+			if (Input::isKeyPressed(Input::Key::Space))
+			{
+				superspeed = 4.0f;
+			}
+			else
+			{
+				superspeed = 1.0f;
+			}
 			if (Input::isKeyPressed(Input::Key::A))
 			{
 				Vector3 f = g_cameraWorld.left();
@@ -321,7 +343,7 @@ namespace Game
 			if (Input::isKeyPressed(Input::Key::LShift))
 				camPos += {0, +1, 0};
 
-			g_cameraWorld.transform.position += camVel * camPos * dt;
+			g_cameraWorld.transform.position += (camVel * superspeed) * camPos * dt;
 
 			Vector3 velDir = { 0, 0, 0 };
 
@@ -367,7 +389,8 @@ namespace Game
 			}
 		}
 
-		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, player.transform.position.x, 0.2f);
+		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, player.transform.position.x - 5, 10.0f * dt);
+		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, player.transform.position.z + 12, 10.0f * dt);
 
 		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
 		if (aspectRatio && Window::getFramebufferSize().y > 0)

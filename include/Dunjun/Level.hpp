@@ -3,6 +3,7 @@
 
 #include <Dunjun/Common.hpp>
 #include <Dunjun/ModelAsset.hpp>
+#include <Dunjun/Math/Random.hpp>
 
 #include <vector>
 
@@ -57,8 +58,8 @@ public:
 	void generate();
 	
 	std::vector<std::vector<TileId>> mapGrid;
-	ReadOnly<u16, Level> mapWidth = 100;
-	ReadOnly<u16, Level> mapHeight = 5;
+	ReadOnly<u16, Level> mapWidth = 64;
+	ReadOnly<u16, Level> mapHeight = 64;
 	ReadOnly<u16, Level> mapDepth = 3;
 
 
@@ -70,7 +71,7 @@ public:
 	Transform transform;
 
 private:
-
+	Random m_random;
 	Mesh::Data m_meshData;
 };
 }

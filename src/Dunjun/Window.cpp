@@ -11,8 +11,8 @@ namespace Window
 	
 	namespace
 	{
-		GLOBAL const int g_windowWidth = 1280;
-		GLOBAL const int g_windowHeight = 720;
+		GLOBAL const int g_windowWidth = 854;
+		GLOBAL const int g_windowHeight = 480;
 
 
 		GLOBAL int g_width = g_windowWidth;

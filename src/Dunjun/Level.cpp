@@ -1,7 +1,5 @@
 #include <Dunjun/Level.hpp>
 
-#include <random>
-
 namespace Dunjun
 {
 	Level::Level()
@@ -19,10 +17,8 @@ namespace Dunjun
 
 		mapGrid = std::vector<std::vector<TileId>>(mapWidth, std::vector<TileId>(mapHeight));
 
-		//std::random_device rd;
-		//std::mt19937 mt(rd());
-		std::mt19937 mt(1); // fixed seed
-		std::uniform_int_distribution<int> dist(0, 100);
+		//remove for random room
+		m_random.setSeed(1);
 
 		TileId lightWoodTile = { 0, 11 };
 		TileId darkWoodTile = { 0, 10 };
@@ -35,15 +31,52 @@ namespace Dunjun
 			darkRockTiles.emplace_back(i, 0);
 
 		for (int i = 0; i < mapWidth; i++)
-		{
 			for (int j = 0; j < mapHeight; j++)
-			{
-				if (dist(mt) > 5)
+				mapGrid[i][j] = blankTile;
+
+
+		for (int n = 0; n < 30; n++)
+		{
+			int w = m_random.getInt(5, 16);
+			int h = m_random.getInt(5, 16);
+			
+			int x = m_random.getInt(0, mapWidth - 1 - w);
+			int y = m_random.getInt(0, mapHeight - 1 - h);
+
+
+			for (int i = x; i < x + w; i++)
+				for (int j = y; j < y + h; j++)
 					mapGrid[i][j] = lightWoodTile;
-				else
-					mapGrid[i][j] = blankTile;
-			}
 		}
+
+
+
+
+
+
+
+
+		//for (int i = 0; i < mapWidth; i++)
+		//{
+		//	for (int j = 0; j < mapHeight; j++)
+		//	{
+
+		//		if ((i / 9) % 2 == 0 && (j / 9) % 2 == 0)
+		//			mapGrid[i][j] = lightWoodTile;
+		//		else
+		//			mapGrid[i][j] = blankTile;
+
+
+		//		/*if (m_random.getInt(0, 100) > 5 || i == 0 || j == mapHeight - 1)
+		//			mapGrid[i][j] = lightWoodTile;
+		//		else
+		//			mapGrid[i][j] = blankTile;*/
+		//	}
+		//}
+
+
+
+
 
 		for (int i = 0; i < mapWidth; i++)
 		{
@@ -53,6 +86,7 @@ namespace Dunjun
 				{
 					addTileSurface(Vector3(i, 0, j), TileSurfaceFace::Up, mapGrid[i][j]);
 				}
+#if 0 // Walls
 				else
 				{
 					addTileSurface(Vector3(i, mapDepth, j), TileSurfaceFace::Up, stoneTiles);
@@ -87,6 +121,7 @@ namespace Dunjun
 							addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Back, stoneTiles);
 					}
 				}
+#endif
 			}
 		}
 
@@ -143,7 +178,8 @@ namespace Dunjun
 			addTileSurface(position, face, randomTilePosSet[0]);
 			return;
 		}
-		TileId tilePos = randomTilePosSet[rand() % length];
+
+		TileId tilePos = randomTilePosSet[m_random.getInt(0, length - 1)];
 		addTileSurface(position, face, tilePos);
 	}
 }
