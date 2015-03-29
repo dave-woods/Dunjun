@@ -46,7 +46,7 @@ public:
 	void setUniform(const std::string& name, f32 x, f32 y, f32 z);
 	void setUniform(const std::string& name, f32 x, f32 y, f32 z, f32 w);
 	void setUniform(const std::string& name, u32 x);
-	void setUniform(const std::string& name, i32 x);
+	void setUniform(const std::string& name, s32 x);
 	void setUniform(const std::string& name, bool x);
 	void setUniform(const std::string& name, const Vector2& v);
 	void setUniform(const std::string& name, const Vector3& v);

@@ -10,122 +10,29 @@ namespace Dunjun
 {
 struct Vector2
 {
-	Vector2()
-		: x(0)
-		, y(0)
-	{
-
-	}
-	explicit Vector2(f32 xy)
-		: x(xy)
-		, y(xy)
-	{
-
-	}
-	Vector2(f32 x, f32 y)
-		: x(x)
-		, y(y)
-	{
-
-	}
-	Vector2(f32 xy[2])
-		: x(xy[0])
-		, y(xy[1])
-	{
-
-	}
+	Vector2();
+	explicit Vector2(f32 xy);
+	Vector2(f32 x, f32 y);
+	Vector2(f32 xy[2]);
 
 	Vector2(const Vector2& other) = default;
 
 	inline f32& operator[](usize index) { return data[index]; }
 	inline const f32& operator[](usize index) const { return data[index]; }
 
-	inline bool operator==(const Vector2& other) const
-	{
-		for (usize i = 0; i < 2; i++)
-		{
-			if (data[i] != other.data[i])
-				return false;
-		}
-		return true;
-	}
-
-	inline bool operator!=(const Vector2& other) const
-	{
-		return !operator==(other);
-	}
-
-	inline Vector2 operator-() const { return{ -x, -y }; }
-
-	inline Vector2 operator+(const Vector2& other) const
-	{
-		return Vector2( x + other.x, y + other.y );
-	}
-
-	inline Vector2 operator-(const Vector2& other) const
-	{
-		return Vector2( x - other.x, y - other.y );
-	}
-
-	inline Vector2 operator*(f32 scalar) const
-	{
-		return Vector2( scalar * x, scalar * y );
-	}
-
-	//Hadamard Product
-	inline Vector2 operator*(const Vector2& other) const
-	{
-		Vector2 result;
-		for (usize i = 0; i < 2; i++)
-			result[i] = data[i] * other.data[i];
-		return result;
-	}
-
-	//Hadamard Division (?)
-	inline Vector2 operator/(const Vector2& other) const
-	{
-		Vector2 result;
-		for (usize i = 0; i < 2; i++)
-			result[i] = data[i] / other.data[i];
-		return result;
-	}
-
-	inline Vector2 operator/(f32 scalar) const
-	{
-		return Vector2(x / scalar, y / scalar);
-	}
-
-	inline Vector2& operator+=(const Vector2& other)
-	{
-		x += other.x;
-		y += other.y;
-
-		return *this;
-	}
-
-	inline Vector2& operator-=(const Vector2& other)
-	{
-		x -= other.x;
-		y -= other.y;
-
-		return *this;
-	}
-
-	inline Vector2& operator*=(f32 scalar)
-	{
-		x *= scalar;
-		y *= scalar;
-
-		return *this;
-	}
-
-	inline Vector2& operator/=(f32 scalar)
-	{
-		x /= scalar;
-		y /= scalar;
-
-		return *this;
-	}
+	bool operator==(const Vector2& other) const;
+	bool operator!=(const Vector2& other) const;
+	Vector2 operator-() const;
+	Vector2 operator+(const Vector2& other) const;
+	Vector2 operator-(const Vector2& other) const;
+	Vector2 operator*(f32 scalar) const;
+	Vector2 operator*(const Vector2& other) const;
+	Vector2 operator/(const Vector2& other) const;
+	Vector2 operator/(f32 scalar) const;
+	Vector2& operator+=(const Vector2& other);
+	Vector2& operator-=(const Vector2& other);
+	Vector2& operator*=(f32 scalar);
+	Vector2& operator/=(f32 scalar);
 
 	union
 	{

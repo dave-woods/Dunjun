@@ -25,18 +25,18 @@ public:
 
 	struct TileId
 	{
-		i16 x = 0;
-		i16 y = 0;
+		s16 x = 0;
+		s16 y = 0;
 
 		TileId()
 		{}
 
-		TileId(i16 x, i16 y)
+		TileId(s16 x, s16 y)
 			: x(x)
 			, y(y)
 		{}
 
-		TileId(i16 xy[2])
+		TileId(s16 xy[2])
 			: x(xy[0])
 			, y(xy[1])
 		{}

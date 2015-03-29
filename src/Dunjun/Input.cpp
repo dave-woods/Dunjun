@@ -42,21 +42,21 @@ namespace Dunjun
 		void setCursorMode(CursorMode mode)
 		{
 			if (mode == CursorMode::Normal)
-				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				glfwSetInputMode(Window::g_ptr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			if (mode == CursorMode::Hidden)
-				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+				glfwSetInputMode(Window::g_ptr, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 			if (mode == CursorMode::Disabled)
-				glfwSetInputMode(Window::ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				glfwSetInputMode(Window::g_ptr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		}
 
 		void setStickyKeys(bool stickyKeys)
 		{
-			glfwSetInputMode(Window::ptr, GLFW_STICKY_KEYS, stickyKeys);
+			glfwSetInputMode(Window::g_ptr, GLFW_STICKY_KEYS, stickyKeys);
 		}
 
 		void setStickyMouseButtons(bool stickyMouseButtons)
 		{
-			glfwSetInputMode(Window::ptr, GLFW_STICKY_MOUSE_BUTTONS, stickyMouseButtons);
+			glfwSetInputMode(Window::g_ptr, GLFW_STICKY_MOUSE_BUTTONS, stickyMouseButtons);
 		}
 	
 		bool isKeyPressed(Key key)
@@ -382,19 +382,19 @@ namespace Dunjun
 			if (code == 0)
 				return false;
 
-			return static_cast<bool>(glfwGetKey(Window::ptr, code));
+			return static_cast<bool>(glfwGetKey(Window::g_ptr, code));
 		}
 
 		Vector2 getCursorPosition()
 		{
 			f64 x, y;
-			glfwGetCursorPos(Window::ptr, &x, &y);
+			glfwGetCursorPos(Window::g_ptr, &x, &y);
 			return Vector2(x, y);
 		}
 
 		void setCursorPosition(const Vector2& position)
 		{
-			glfwSetCursorPos(Window::ptr, static_cast<f64>(position.x), static_cast<f64>(position.y));
+			glfwSetCursorPos(Window::g_ptr, static_cast<f64>(position.x), static_cast<f64>(position.y));
 		}
 
 		/*Vector2 getScrollOffset()
@@ -404,7 +404,7 @@ namespace Dunjun
 
 		bool isMouseButtonPressed(Mouse button)
 		{
-			return static_cast<bool>(glfwGetMouseButton(Window::ptr, (int)button));
+			return static_cast<bool>(glfwGetMouseButton(Window::g_ptr, (int)button));
 		}
 
 		f64 getTime()
@@ -507,12 +507,12 @@ namespace Dunjun
 
 		std::string getClipboardString()
 		{
-			return glfwGetClipboardString(Window::ptr);
+			return glfwGetClipboardString(Window::g_ptr);
 		}
 
 		void setClipboardString(const std::string& str)
 		{
-			glfwSetClipboardString(Window::ptr, str.c_str());
+			glfwSetClipboardString(Window::g_ptr, str.c_str());
 		}
 
 	} // namespace Input

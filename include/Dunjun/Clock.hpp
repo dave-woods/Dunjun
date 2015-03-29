@@ -1,7 +1,7 @@
 #ifndef DUNJUN_CLOCK_HPP
 #define DUNJUN_CLOCK_HPP
 
-#include <GLFW/glfw3.h>
+#include <Dunjun/Input.hpp>
 #include <Dunjun/Types.hpp>
 
 namespace Dunjun
@@ -13,7 +13,7 @@ public:
 
 	inline f64 restart()
 	{
-		f64 now = glfwGetTime();
+		f64 now = Input::getTime();
 		f64 elapsed = now - m_startTime;
 		m_startTime = now;
 

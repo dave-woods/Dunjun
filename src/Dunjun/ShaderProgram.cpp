@@ -238,7 +238,7 @@ namespace Dunjun
 		glUniform1ui(loc, x);
 	}
 
-	void ShaderProgram::setUniform(const std::string& name, i32 x)
+	void ShaderProgram::setUniform(const std::string& name, s32 x)
 	{
 		checkInUse();
 			

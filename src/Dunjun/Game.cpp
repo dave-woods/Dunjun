@@ -61,18 +61,18 @@ namespace Game
 
 		if (Input::isKeyPressed(Input::Key::F11))
 		{
-			Window::isFullscreen = !Window::isFullscreen;
-			if (Window::isFullscreen)
+			Window::g_isFullscreen = !Window::g_isFullscreen;
+			if (Window::g_isFullscreen)
 			{
 				GLFWwindow* w = Window::createWindow(glfwGetPrimaryMonitor());
 				Window::destroyWindow();
-				Window::ptr = w;
+				Window::g_ptr = w;
 			}
 			else
 			{
 				GLFWwindow* w = Window::createWindow(nullptr);
 				Window::destroyWindow();
-				Window::ptr = w;
+				Window::g_ptr = w;
 			}
 
 			Window::makeContextCurrent();
@@ -174,7 +174,7 @@ namespace Game
 		g_cameraPlayer.lookAt({ 4, 0, 0 });
 		g_cameraPlayer.projectionType = ProjectionType::Perspective;
 		g_cameraPlayer.fieldOfView = Degree(50.0f);
-		g_cameraPlayer.orthoScale = 600;
+		g_cameraPlayer.orthoScale = 8;
 
 		g_cameraWorld = g_cameraPlayer;
 
@@ -379,9 +379,9 @@ namespace Game
 				else
 				{
 					Radian a(-std::atan(f.z / f.x));
-					a += Radian(Constants::TAU / 4.0f);
+					a += Radian(Constants::Tau / 4.0f);
 					if (f.x >= 0)
-						a -= Radian(Constants::TAU / 2.0f);
+						a -= Radian(Constants::Tau / 2.0f);
 
 					player.transform.orientation = angleAxis(a, { 0, 1, 0 });
 				}

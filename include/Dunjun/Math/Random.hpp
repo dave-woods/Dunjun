@@ -23,9 +23,9 @@ namespace Dunjun
 		}
 
 		//inclusive
-		i32 getInt(i32 min, i32 max)
+		s32 getInt(s32 min, s32 max)
 		{
-			std::uniform_int_distribution<i32> dist(min, max);
+			std::uniform_int_distribution<s32> dist(min, max);
 			return dist(m_engine);
 		}
 
@@ -35,6 +35,10 @@ namespace Dunjun
 			return dist(m_engine);
 		}
 
+		b8 getBool()
+		{
+			return getInt(0, 1) == 1;
+		}
 	private:
 		std::mt19937 m_engine{ std::random_device{}() };
 	};

@@ -74,8 +74,8 @@ namespace Dunjun
 		else if (projectionType == ProjectionType::Orthographic)
 		{
 			f32 distance = 0.5 * (farPlane - nearPlane);
-			m = ortho(orthoScale * viewportAspectRatio, -orthoScale * viewportAspectRatio,
-				orthoScale, -orthoScale, -distance, distance);
+			m = ortho(-orthoScale * viewportAspectRatio, orthoScale * viewportAspectRatio,
+				-orthoScale, orthoScale, -distance, distance);
 		}
 
 		return m;
