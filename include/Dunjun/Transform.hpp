@@ -14,6 +14,8 @@ namespace Dunjun
 
 	Transform operator*(const Transform& ps, const Transform& ls);
 	Transform operator/(const Transform& ws, const Transform& ps);
+	Transform& operator*=(Transform& ps, const Transform& ls);
+	Transform& operator/=(Transform& ws, const Transform& ps);
 	Transform inverse(const Transform& t);
 	Matrix4 transformMatrix4(const Transform& t);
 } //namespace Dunjun

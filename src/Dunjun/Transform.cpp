@@ -28,6 +28,18 @@ namespace Dunjun
 		return ls;
 	}
 
+	Transform& operator*=(Transform& ps, const Transform& ls)
+	{
+		ps = ps * ls;
+		return ps;
+	}
+	Transform& operator/=(Transform& ws, const Transform& ps)
+	{
+		ws = ws / ps;
+		return ws;
+	}
+
+
 	Transform inverse(const Transform& t)
 	{
 		const Transform i;

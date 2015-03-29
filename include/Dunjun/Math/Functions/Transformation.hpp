@@ -1,5 +1,5 @@
-#ifndef DUNJUN_MATH_FUNCTIONS_TRANSFORM_HPP
-#define DUNJUN_MATH_FUNCTIONS_TRANSFORM_HPP
+#ifndef DUNJUN_MATH_FUNCTIONS_TRANSFORMATION_HPP
+#define DUNJUN_MATH_FUNCTIONS_TRANSFORMATION_HPP
 
 #include <Dunjun/Math/Vector3.hpp>
 #include <Dunjun/Math/Matrix4.hpp>
@@ -26,4 +26,4 @@ namespace Dunjun
 	Quaternion quaternionLookAt(const Vector3& eye, const Vector3& center, const Vector3& up);
 }
 
-#endif // !DUNJUN_MATH_FUNCTIONS_HPP
+#endif

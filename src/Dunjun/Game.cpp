@@ -11,6 +11,9 @@
 #include <Dunjun/Math.hpp>
 #include <Dunjun/Camera.hpp>
 #include <Dunjun/ModelAsset.hpp>
+
+#include <Dunjun/Scene/SceneNode.hpp>
+
 #include <Dunjun/Level.hpp>
 
 #include <GLFW/glfw3.h>
@@ -41,6 +44,8 @@ GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
 
+GLOBAL SceneNode g_rootNode;
+
 GLOBAL Camera g_cameraPlayer;
 GLOBAL Camera g_cameraWorld;
 GLOBAL Camera* g_currentCamera = &g_cameraPlayer;
@@ -49,7 +54,26 @@ GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
 
 GLOBAL Level g_level;
-GLOBAL Matrix4 g_viewTest;
+
+class ModelNode : public SceneNode
+{
+public:
+	using UPtr = std::unique_ptr < ModelNode > ;
+	ModelAsset* asset = nullptr;
+protected:
+	virtual void drawCurrent(Transform t)
+	{
+		ShaderProgram* shaders = asset->material->shaders;
+		Texture* tex = asset->material->texture;
+
+		shaders->use();
+		Texture::bind(tex, 0);
+		
+		asset->mesh->draw();
+
+		shaders->stopUsing();
+	}
+};
 
 
 namespace Game
@@ -141,11 +165,21 @@ namespace Game
 	{
 		g_level.material = &g_materials["terrain"];
 		g_level.generate();
+		g_rootNode.onStart();
 	}
 
 	INTERNAL void loadInstances()
 	{
 		generateWorld();
+
+		{
+			ModelNode::UPtr player = make_unique<ModelNode>();
+			
+			player->asset = &g_sprite;
+			player->transform.position = { 4, 0.5, 4 };
+			
+			g_rootNode.attachChild(std::move(player));
+		}
 
 		ModelInstance player;
 		player.asset = &g_sprite;
@@ -193,6 +227,9 @@ namespace Game
 
 	INTERNAL void update(f32 dt)
 	{
+		g_rootNode.update(dt);
+
+
 		ModelInstance& player = g_instances[0];
 
 		f32 camVel = 10.0f;
@@ -500,6 +537,8 @@ namespace Game
 			currentShaders->stopUsing();
 		
 		Texture::bind(nullptr, 0);
+
+		g_rootNode.draw();
 
 		Window::swapBuffers();
 	}
