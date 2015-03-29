@@ -4,6 +4,7 @@
 #include <Dunjun/Common.hpp>
 #include <Dunjun/ModelAsset.hpp>
 #include <Dunjun/Math/Random.hpp>
+#include <Dunjun/Math/Rectangle.hpp>
 
 #include <vector>
 
@@ -71,6 +72,11 @@ public:
 	Transform transform;
 
 private:
+
+	void placeRooms();
+
+	std::vector<Rectangle> m_rooms;
+
 	Random m_random;
 	Mesh::Data m_meshData;
 };
