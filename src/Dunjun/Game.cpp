@@ -45,6 +45,8 @@ GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
 
 GLOBAL Level g_level;
+GLOBAL Matrix4 g_viewTest;
+
 
 namespace Game
 {
@@ -143,20 +145,33 @@ namespace Game
 
 	INTERNAL void loadInstances()
 	{
-		Transform parent;
+		//Transform parent;
 
 		ModelInstance a;
 		a.asset = &g_sprite;
-		a.transform.position = { 4, 0.5, 4 };
-		a.transform.scale = { 1, 1, 1 };
+		a.transform.position = { 4, 1, 4 };
+		a.transform.scale = { 1, 2, 1 };
 		g_instances.push_back(a);
 
 		generateWorld();
 
-		g_camera.transform.position = { 4, 4, 10 };
+		g_camera.viewportAspectRatio = 16.0f / 9.0f;
+
+		g_camera.transform.position = { 4, 7, 14 };
 		g_camera.lookAt({ 4, 0, 0 });
 		g_camera.projectionType = ProjectionType::Perspective;
 		g_camera.fieldOfView = Degree(50.0f);
+
+		const Matrix4 pp = g_camera.getProjection();
+
+		g_camera.projectionType = ProjectionType::Orthographic;
+		g_camera.orthoScale = 600;
+
+		const Matrix4 op = g_camera.getProjection();
+
+		g_viewTest = lerp(pp, op, 0.9f);
+
+		
 	}
 
 	INTERNAL void update(f32 dt)
@@ -169,93 +184,93 @@ namespace Game
 		/*{
 			if (Input::isGamepadPresent(Input::Gamepad_1))
 			{
-				Input::GamepadAxes axes = Input::getGamepadAxes(Input::Gamepad_1);
+			Input::GamepadAxes axes = Input::getGamepadAxes(Input::Gamepad_1);
 
-				const f32 lookSensitivity = 2.0f;
-				const f32 deadZone = 0.21f;
+			const f32 lookSensitivity = 2.0f;
+			const f32 deadZone = 0.21f;
 
-				Vector2 rts = axes.rightThumbstick;
-				if (std::abs(rts.x) < deadZone)
-					rts.x = 0;
-				if (std::abs(rts.y) < deadZone)
-					rts.y = 0;
+			Vector2 rts = axes.rightThumbstick;
+			if (std::abs(rts.x) < deadZone)
+			rts.x = 0;
+			if (std::abs(rts.y) < deadZone)
+			rts.y = 0;
 
-				g_camera.offsetOrientation(-lookSensitivity * Radian(rts.x * dt), lookSensitivity * Radian(rts.y * dt));
+			g_camera.offsetOrientation(-lookSensitivity * Radian(rts.x * dt), lookSensitivity * Radian(rts.y * dt));
 
-				Vector2 lts = axes.leftThumbstick;
-				if (std::abs(lts.x) < deadZone)
-					lts.x = 0;
-				if (std::abs(lts.y) < deadZone)
-					lts.y = 0
+			Vector2 lts = axes.leftThumbstick;
+			if (std::abs(lts.x) < deadZone)
+			lts.x = 0;
+			if (std::abs(lts.y) < deadZone)
+			lts.y = 0
 
-				if (length(lts) > 1.0f)
-					lts = normalize(lts);
+			if (length(lts) > 1.0f)
+			lts = normalize(lts);
 
-				Vector3 velDir = { 0, 0, 0 };
+			Vector3 velDir = { 0, 0, 0 };
 
-				Vector3 forward = g_camera.forward();
-				forward.y = 0;
-				forward = normalize(forward);
-				velDir += lts.x * g_camera.right();
-				velDir += lts.y * forward;
+			Vector3 forward = g_camera.forward();
+			forward.y = 0;
+			forward = normalize(forward);
+			velDir += lts.x * g_camera.right();
+			velDir += lts.y * forward;
 
-				Input::GamepadButtons buttons = Input::getGamepadButtons(Input::Gamepad_1);
+			Input::GamepadButtons buttons = Input::getGamepadButtons(Input::Gamepad_1);
 
-				if (buttons[(usize)Input::XboxButton::RightShoulder])
-				{
-					velDir.y += 1;
-				}
-				if (buttons[(usize)Input::XboxButton::LeftShoulder])
-				{
-					velDir.y -= 1;
-				}
-
-				if (buttons[(usize)Input::XboxButton::DpadUp])
-				{
-					Vector3 f = g_camera.forward();
-					f.y = 0;
-					f = normalize(f);
-					velDir += f;
-				}
-				if (buttons[(usize)Input::XboxButton::DpadDown])
-				{
-					Vector3 b = g_camera.backward();
-					b.y = 0;
-					b = normalize(b);
-					velDir += b;
-				}
-
-				if (buttons[(usize)Input::XboxButton::DpadLeft])
-				{
-					Vector3 l = g_camera.left();
-					l.y = 0;
-					l = normalize(l);
-					velDir += l;
-				}
-				if (buttons[(usize)Input::XboxButton::DpadRight])
-				{
-					Vector3 r = g_camera.right();
-					r.y = 0;
-					r = normalize(r);
-					velDir += r;
-				}
-
-				if (length(velDir) > 1.0f)
-					velDir = normalize(velDir);
-
-				g_camera.transform.position += camVel * velDir * dt;
-
-				// Vibrate
-				if (Input::isGamepadButtonPressed(Input::Gamepad_1, Input::XboxButton::A))
-				{
-					Input::setGamepadVibration(Input::Gamepad_1, 0.5f, 0.5f);
-				}
-				else
-				{
-					Input::setGamepadVibration(Input::Gamepad_1, 0.0f, 0.0f);
-				}
+			if (buttons[(usize)Input::XboxButton::RightShoulder])
+			{
+			velDir.y += 1;
 			}
-		}*/
+			if (buttons[(usize)Input::XboxButton::LeftShoulder])
+			{
+			velDir.y -= 1;
+			}
+
+			if (buttons[(usize)Input::XboxButton::DpadUp])
+			{
+			Vector3 f = g_camera.forward();
+			f.y = 0;
+			f = normalize(f);
+			velDir += f;
+			}
+			if (buttons[(usize)Input::XboxButton::DpadDown])
+			{
+			Vector3 b = g_camera.backward();
+			b.y = 0;
+			b = normalize(b);
+			velDir += b;
+			}
+
+			if (buttons[(usize)Input::XboxButton::DpadLeft])
+			{
+			Vector3 l = g_camera.left();
+			l.y = 0;
+			l = normalize(l);
+			velDir += l;
+			}
+			if (buttons[(usize)Input::XboxButton::DpadRight])
+			{
+			Vector3 r = g_camera.right();
+			r.y = 0;
+			r = normalize(r);
+			velDir += r;
+			}
+
+			if (length(velDir) > 1.0f)
+			velDir = normalize(velDir);
+
+			g_camera.transform.position += camVel * velDir * dt;
+
+			// Vibrate
+			if (Input::isGamepadButtonPressed(Input::Gamepad_1, Input::XboxButton::A))
+			{
+			Input::setGamepadVibration(Input::Gamepad_1, 0.5f, 0.5f);
+			}
+			else
+			{
+			Input::setGamepadVibration(Input::Gamepad_1, 0.0f, 0.0f);
+			}
+			}
+			}*/
 
 		f32 playerVel = 4.0f;
 
@@ -268,7 +283,7 @@ namespace Game
 			Input::setCursorPosition({ 0, 0 });
 			Input::setCursorMode(Input::CursorMode::Disabled); // Problem - this fixes, sort of?
 			Vector3 camPos = { 0, 0, 0 };
-			
+
 			if (Input::isKeyPressed(Input::Key::A))
 			{
 				Vector3 f = g_camera.left();
@@ -305,7 +320,7 @@ namespace Game
 			g_camera.transform.position += camVel * camPos * dt;
 
 			Vector3 velDir = { 0, 0, 0 };
-			
+
 			if (Input::isKeyPressed(Input::Key::Up))
 				velDir += {0, 0, -1};
 			if (Input::isKeyPressed(Input::Key::Down))
@@ -323,7 +338,7 @@ namespace Game
 
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
-			
+
 			player.transform.position += playerVel * velDir * dt;
 
 			{
@@ -331,7 +346,7 @@ namespace Game
 				player.transform.orientation = conjugate(quaternionLookAt(player.transform.position, g_camera.transform.position, { 0, 1, 0 }));
 #elif 0// Billboard fixed y axis
 				Vector3 f = player.transform.position - g_camera.transform.position;
-				
+
 				f.y = 0;
 				if (f.x == 0 && f.z == 0)
 					player.transform.orientation = Quaternion();
@@ -347,12 +362,45 @@ namespace Game
 #endif
 			}
 		}
-		//g_camera.transform.position.x = player.transform.position.x;
+
+		{
+			f32 dx = (player.transform.position.x - g_camera.transform.position.x);
+			f32 dxAbs = std::abs(dx);
+			f32 w = 0.5f;
+			f32 s = 3.0f;
+
+			if (dxAbs > w)
+			{
+				f32 sgn = dx / dxAbs;
+				f32 x = dxAbs - w;
+				x = x * x;
+				g_camera.transform.position.x += s * sgn * x * dt;
+			}
+		}
+
+
 		//g_camera.lookAt(player.transform.position);
 		//g_camera.viewportAspectRatio = getWindowSize().x / getWindowSize().y;
 		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
 		if (aspectRatio && Window::getFramebufferSize().y > 0)
 			g_camera.viewportAspectRatio = aspectRatio;
+		{
+			g_camera.projectionType = ProjectionType::Perspective;
+			const Matrix4 pp = g_camera.getProjection();
+			g_camera.projectionType = ProjectionType::Orthographic;
+			const Matrix4 op = g_camera.getProjection();
+
+			/*LOCAL_INTERNAL f32 time = 0;
+			time += dt;
+
+			f32 w = 0.3f;
+			f32 t = std::sin(w * time) * std::sin(w * time);
+			t = std::pow(t, 0.3f);*/
+
+			g_viewTest = lerp(pp, op, 0.95f);
+			//g_viewTest = lerp(pp, op, 1.0f);
+			//g_viewTest = lerp(pp, op, 0.0f);
+		}
 	}
 
 	INTERNAL void renderInstance(const ModelInstance& inst)
@@ -360,7 +408,7 @@ namespace Game
 		ModelAsset* asset = inst.asset;
 		ShaderProgram* shaders = asset->material->shaders;
 
-		shaders->setUniform("u_camera", g_camera.getMatrix());
+		shaders->setUniform("u_camera", g_viewTest * g_camera.getView());//g_camera.getMatrix());
 		shaders->setUniform("u_transform", inst.transform);
 		shaders->setUniform("u_tex", (Dunjun::u32)0);
 
@@ -371,7 +419,7 @@ namespace Game
 	{
 		ShaderProgram* shaders = level.material->shaders;
 
-		shaders->setUniform("u_camera", g_camera.getMatrix());
+		shaders->setUniform("u_camera", g_viewTest * g_camera.getView());//g_camera.getMatrix());
 		shaders->setUniform("u_transform", level.transform);
 		shaders->setUniform("u_tex", (Dunjun::u32)0);
 

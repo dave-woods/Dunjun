@@ -29,7 +29,7 @@ namespace Dunjun
 
 		rot[1][0] = 0 + t[1] * axis[0] - s * axis[2];
 		rot[1][1] = c + t[1] * axis[1];
-		rot[1][2] = 0 + t[1] * axis[2] + s * axis[0];
+		rot[1][2] = 0 + t[1] * axis[2] + s * axis[2]; // I think the last axis[2] should be axis[0]
 		rot[1][3] = 0;
 
 		rot[2][0] = 0 + t[2] * axis[0] + s * axis[1];
@@ -65,10 +65,10 @@ namespace Dunjun
 	{
 		Matrix4 result;
 
-		result[0][0] = (2.0f) / (right - left); // 2 * zNear
-		result[1][1] = (2.0f) / (top - bottom); // 2 * zNear
+		result[0][0] = (2.0f * zNear) / (right - left); // I think zNear should not be there
+		result[1][1] = (2.0f * zNear) / (top - bottom); // I think zNear should not be there
 		result[2][2] = -2.0f / (zFar - zNear);
-		result[2][3] = -1.0f;
+		//result[2][3] = -1.0f;
 		result[3][0] = -(right + left) / (right - left);
 		result[3][1] = -(top + bottom) / (top - bottom);
 		result[3][2] = -(zFar + zNear) / (zFar - zNear);

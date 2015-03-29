@@ -1,5 +1,7 @@
 #include <Dunjun/Level.hpp>
 
+#include <random>
+
 namespace Dunjun
 {
 	Level::Level()
@@ -17,7 +19,10 @@ namespace Dunjun
 
 		mapGrid = std::vector<std::vector<TileId>>(mapWidth, std::vector<TileId>(mapHeight));
 
-		srand(1);
+		//std::random_device rd;
+		//std::mt19937 mt(rd());
+		std::mt19937 mt(1); // fixed seed
+		std::uniform_int_distribution<int> dist(0, 100);
 
 		TileId lightWoodTile = { 0, 11 };
 		TileId darkWoodTile = { 0, 10 };
@@ -33,7 +38,7 @@ namespace Dunjun
 		{
 			for (int j = 0; j < mapHeight; j++)
 			{
-				if (rand() % 100 > 20)
+				if (dist(mt) > 5)
 					mapGrid[i][j] = lightWoodTile;
 				else
 					mapGrid[i][j] = blankTile;
@@ -47,7 +52,10 @@ namespace Dunjun
 				if (mapGrid[i][j] != blankTile)
 				{
 					addTileSurface(Vector3(i, 0, j), TileSurfaceFace::Up, mapGrid[i][j]);
-					addTileSurface(Vector3(i, mapDepth, j), TileSurfaceFace::Down, darkRockTiles);
+				}
+				else
+				{
+					addTileSurface(Vector3(i, mapDepth, j), TileSurfaceFace::Up, stoneTiles);
 				}
 
 				for (int k = 0; k < mapDepth; k++)

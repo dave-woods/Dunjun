@@ -57,8 +57,8 @@ public:
 	void generate();
 	
 	std::vector<std::vector<TileId>> mapGrid;
-	ReadOnly<u16, Level> mapWidth = 16;
-	ReadOnly<u16, Level> mapHeight = 16;
+	ReadOnly<u16, Level> mapWidth = 100;
+	ReadOnly<u16, Level> mapHeight = 5;
 	ReadOnly<u16, Level> mapDepth = 3;
 
 
