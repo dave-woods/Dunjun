@@ -11,8 +11,12 @@ namespace Window
 	
 	namespace
 	{
-		GLOBAL int g_width = 854;
-		GLOBAL int g_height = 480;
+		GLOBAL const int g_windowWidth = 1280;
+		GLOBAL const int g_windowHeight = 720;
+
+
+		GLOBAL int g_width = g_windowWidth;
+		GLOBAL int g_height = g_windowHeight;
 	}
 
 	INTERNAL void resizeCallback(GLFWwindow* window, int width, int height);
@@ -45,8 +49,8 @@ namespace Window
 		{
 			glfwWindowHint(GLFW_RESIZABLE, true);
 
-			Window::g_width = 854;
-			Window::g_height = 480;
+			Window::g_width = g_windowWidth;
+			Window::g_height = g_windowHeight;
 		}
 
 		GLFWwindow* w = glfwCreateWindow(Window::g_width, Window::g_height, "Dunjun", monitor, Window::ptr);

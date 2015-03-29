@@ -105,46 +105,32 @@ namespace Dunjun
 		// Right-Left
 		if ((u32)face / 2 == 0)
 		{
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 1.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight });
 		}
 		// Up-Down
 		else if ((u32)face / 2 == 1)
 		{
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 1.0f, position.y + 0.0f, position.z + 1.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight });
 		}
 		// Front-Back
 		else if ((u32)face / 2 == 2)
 		{
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 1.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
-			m_meshData.vertices.push_back({ { position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight }, { { 0xFF, 0xFF, 0xFF, 0xFF } } });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 1.0f, position.y + 0.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 0) * tileHeight });
+			m_meshData.vertices.append({ position.x + 1.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 0) * tileWidth, (tilePos.y + 1) * tileHeight });
+			m_meshData.vertices.append({ position.x + 0.0f, position.y + 1.0f, position.z + 0.0f }, { (tilePos.x + 1) * tileWidth, (tilePos.y + 1) * tileHeight });
 		}
 
 		if ((u32)face % 2 == 0)
-		{
-			m_meshData.indices.push_back(index + 0);
-			m_meshData.indices.push_back(index + 1);
-			m_meshData.indices.push_back(index + 2);
-			m_meshData.indices.push_back(index + 2);
-			m_meshData.indices.push_back(index + 3);
-			m_meshData.indices.push_back(index + 0);
-		}
+			m_meshData.addFace(index, 0, 1, 2).addFace(index, 2, 3, 0);
 		else
-		{
-			m_meshData.indices.push_back(index + 0);
-			m_meshData.indices.push_back(index + 3);
-			m_meshData.indices.push_back(index + 2);
-			m_meshData.indices.push_back(index + 2);
-			m_meshData.indices.push_back(index + 1);
-			m_meshData.indices.push_back(index + 0);
-		}
+			m_meshData.addFace(index, 0, 3, 2).addFace(index, 2, 1, 0);
 	}
 
 	void Level::addTileSurface(const Vector3& position, TileSurfaceFace face, const Level::RandomTileSet& randomTilePosSet)
