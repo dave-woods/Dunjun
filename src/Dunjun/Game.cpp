@@ -33,6 +33,8 @@ struct ModelInstance
 	Transform transform;
 };
 
+
+
 namespace
 {
 	GLOBAL const char* default_windowTitle = "Dunjun v0.0.37";
@@ -44,37 +46,46 @@ GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
 GLOBAL std::vector<ModelInstance> g_instances;
 
-GLOBAL SceneNode g_rootNode;
-
 GLOBAL Camera g_cameraPlayer;
 GLOBAL Camera g_cameraWorld;
 GLOBAL Camera* g_currentCamera = &g_cameraPlayer;
 
-GLOBAL std::map<std::string, Material> g_materials;
-GLOBAL std::map<std::string, Mesh*> g_meshes;
-
-GLOBAL Level g_level;
-
 class ModelNode : public SceneNode
 {
 public:
-	using UPtr = std::unique_ptr < ModelNode > ;
+	using UPtr = std::unique_ptr < ModelNode >;
 	ModelAsset* asset = nullptr;
 protected:
 	virtual void drawCurrent(Transform t)
 	{
 		ShaderProgram* shaders = asset->material->shaders;
-		Texture* tex = asset->material->texture;
+		const Texture* tex = asset->material->texture;
+
+		if (!shaders || !tex)
+			return;
 
 		shaders->use();
 		Texture::bind(tex, 0);
-		
+
+		shaders->setUniform("u_camera", g_currentCamera->getMatrix());//g_camera.getMatrix());
+		shaders->setUniform("u_transform", t);
+		shaders->setUniform("u_tex", (Dunjun::u32)0);
+
+
 		asset->mesh->draw();
 
 		shaders->stopUsing();
+		Texture::bind(nullptr, 0);
 	}
 };
 
+GLOBAL SceneNode g_rootNode;
+GLOBAL ModelNode* g_player;
+
+GLOBAL std::map<std::string, Material> g_materials;
+GLOBAL std::map<std::string, Mesh*> g_meshes;
+
+GLOBAL Level g_level;
 
 namespace Game
 {
@@ -172,19 +183,18 @@ namespace Game
 	{
 		generateWorld();
 
+		// Player
 		{
 			ModelNode::UPtr player = make_unique<ModelNode>();
 			
+			player->name = "player";
 			player->asset = &g_sprite;
 			player->transform.position = { 4, 0.5, 4 };
 			
+			g_player = player.get();
+
 			g_rootNode.attachChild(std::move(player));
 		}
-
-		ModelInstance player;
-		player.asset = &g_sprite;
-		player.transform.position = { 4, 0.5, 4 };
-		player.transform.scale = { 1, 1, 1 };
 
 		{
 			bool escape = false;
@@ -194,15 +204,12 @@ namespace Game
 				{
 					if (g_level.mapGrid[i][j] != Level::TileId(-1, -1))
 					{
-						player.transform.position = Vector3(i, 0.5, j);
+						g_player->transform.position = Vector3((f32)i, 0.5, (f32)j);
 						escape = true;
 					}
 				}
 			}
 		}
-		g_instances.push_back(player);
-
-		//g_cameraPlayer.viewportAspectRatio = 16.0f / 9.0f;
 
 		g_cameraPlayer.transform.position = { -4, 7, 14 };
 		g_cameraPlayer.lookAt({ 4, 0, 0 });
@@ -212,25 +219,12 @@ namespace Game
 
 		g_cameraWorld = g_cameraPlayer;
 
-		g_cameraPlayer.projectionType = ProjectionType::Orthographic;
-
-	/*	const Matrix4 pp = g_cameraPlayer.getProjection();
-
-		g_cameraPlayer.projectionType = ProjectionType::Orthographic;
-
-		const Matrix4 op = g_camera.getProjection();
-
-		g_viewTest = lerp(pp, op, 0.9f);*/
-
-		
+		g_cameraPlayer.projectionType = ProjectionType::Orthographic;		
 	}
 
 	INTERNAL void update(f32 dt)
 	{
 		g_rootNode.update(dt);
-
-
-		ModelInstance& player = g_instances[0];
 
 		f32 camVel = 10.0f;
 
@@ -402,7 +396,7 @@ namespace Game
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
 
-			player.transform.position += playerVel * velDir * dt;
+			g_player->transform.position += playerVel * velDir * dt;
 
 			{
 #if 0 // Billboard
@@ -426,8 +420,9 @@ namespace Game
 			}
 		}
 
-		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, player.transform.position.x - 5, 10.0f * dt);
-		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, player.transform.position.z + 12, 10.0f * dt);
+		// Camera lag in orthographic view
+		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x - 5, 10.0f * dt);
+		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z + 12, 10.0f * dt);
 
 		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
 		if (aspectRatio && Window::getFramebufferSize().y > 0)
@@ -436,8 +431,8 @@ namespace Game
 			g_cameraWorld.viewportAspectRatio = aspectRatio;
 		}
 
+		// Camera swapping
 		{
-
 			if (Input::isKeyPressed(Input::Key::Num1))
 				g_currentCamera = &g_cameraPlayer;
 			else if (Input::isKeyPressed(Input::Key::Num2))
@@ -445,12 +440,6 @@ namespace Game
 				g_cameraWorld.transform = g_cameraPlayer.transform;
 				g_currentCamera = &g_cameraWorld;
 			}
-
-			//g_cameraPlayer.projectionType = ProjectionType::Perspective;
-			//const Matrix4 pp = g_cameraPlayer.getProjection();
-			//g_cameraPlayer.projectionType = ProjectionType::Orthographic;
-			//const Matrix4 op = g_cameraPlayer.getProjection();
-			//g_viewTest = lerp(pp, op, 0.95f);
 		}
 	}
 
@@ -459,8 +448,7 @@ namespace Game
 		ModelAsset* asset = inst.asset;
 		ShaderProgram* shaders = asset->material->shaders;
 
-		//shaders->setUniform("u_camera", g_viewTest * g_currentCamera->getView());//g_camera.getMatrix());
-		shaders->setUniform("u_camera", g_currentCamera->getMatrix());//g_camera.getMatrix());
+		shaders->setUniform("u_camera", g_currentCamera->getMatrix());
 		shaders->setUniform("u_transform", inst.transform);
 		shaders->setUniform("u_tex", (Dunjun::u32)0);
 
@@ -471,8 +459,7 @@ namespace Game
 	{
 		ShaderProgram* shaders = level.material->shaders;
 
-		//shaders->setUniform("u_camera", g_viewTest * g_currentCamera->getView());//g_camera.getMatrix());
-		shaders->setUniform("u_camera", g_currentCamera->getMatrix());//g_camera.getMatrix());
+		shaders->setUniform("u_camera", g_currentCamera->getMatrix());
 		shaders->setUniform("u_transform", level.transform);
 		shaders->setUniform("u_tex", (Dunjun::u32)0);
 
@@ -483,7 +470,7 @@ namespace Game
 	{
 		{
 			Vector2 fbSize = Window::getFramebufferSize();
-			glViewport(0, 0, fbSize.x, fbSize.y);
+			glViewport(0, 0, (GLsizei)fbSize.x, (GLsizei)fbSize.y);
 		}
 		
 		glClearColor(0, 0, 0, 1);

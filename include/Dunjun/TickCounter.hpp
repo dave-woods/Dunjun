@@ -13,7 +13,7 @@ public:
 		bool reset = false;
 		if (m_clock.getElapsedTime() >= period)
 		{
-			m_tickRate = m_tick * (1.0 / period);
+			m_tickRate = m_tick * (usize)(1.0 / period);
 			m_tick = 0;
 			reset = true;
 			m_clock.restart();
