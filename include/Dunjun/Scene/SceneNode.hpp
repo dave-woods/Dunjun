@@ -5,6 +5,7 @@
 #include <Dunjun/ReadOnly.hpp>
 #include <Dunjun/Transform.hpp>
 #include <Dunjun/NonCopyable.hpp>
+#include <Dunjun/Renderer.hpp>
 
 #include <Dunjun/Scene/NodeComponent.hpp>
 
@@ -38,7 +39,7 @@ namespace Dunjun
 
 		void onStart();
 		void update(f32 dt);
-		virtual void draw(Transform t = Transform());
+		virtual void draw(Renderer& renderer, Transform t = Transform());
 
 		ReadOnly<SceneNode*, SceneNode> parent;
 	
@@ -49,8 +50,8 @@ namespace Dunjun
 		virtual void updateCurrent(f32 dt);
 		void updateChildren(f32 dt);
 
-		virtual void drawCurrent(Transform t);
-		void drawChildren(Transform t);
+		virtual void drawCurrent(Renderer& renderer, Transform t);
+		void drawChildren(Renderer& renderer, Transform t);
 
 		std::vector<UPtr> m_children;
 		GroupedComponentMap m_groupedComponents;

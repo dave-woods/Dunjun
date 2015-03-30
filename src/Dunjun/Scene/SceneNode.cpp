@@ -56,8 +56,8 @@ namespace Dunjun
 	{
 		Transform result;
 
-		for (SceneNode* p = parent; p != nullptr; p->parent)
-			result *= p->transform;
+		for (const SceneNode* node = this; node != nullptr; node = node->parent)
+			result *= node->transform;
 
 
 		return result;
@@ -82,14 +82,14 @@ namespace Dunjun
 				component->update(dt);
 	}
 
-	void SceneNode::draw(Transform t)
+	void SceneNode::draw(Renderer& renderer, Transform t)
 	{
 		t *= this->transform;
-		drawCurrent(t);
-		drawChildren(t);
+		drawCurrent(renderer, t);
+		drawChildren(renderer, t);
 		for (auto& group : m_groupedComponents)
 			for (auto& component : group.second)
-				component->draw(t);
+				component->draw(renderer, t);
 	}
 
 	void SceneNode::onStartCurrent()
@@ -114,15 +114,15 @@ namespace Dunjun
 			child->update(dt);
 	}
 
-	void SceneNode::drawCurrent(Transform t)
+	void SceneNode::drawCurrent(Renderer& renderer, Transform t)
 	{
 		// Do nothing by default
 	}
 
-	void SceneNode::drawChildren(Transform t)
+	void SceneNode::drawChildren(Renderer& renderer, Transform t)
 	{
 		for (UPtr& child : m_children)
-			child->draw(t);
+			child->draw(renderer, t);
 	}
 
 	SceneNode* SceneNode::addComponent(NodeComponent* component)

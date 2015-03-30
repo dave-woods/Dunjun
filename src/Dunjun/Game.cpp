@@ -12,7 +12,8 @@
 #include <Dunjun/Camera.hpp>
 #include <Dunjun/ModelAsset.hpp>
 
-#include <Dunjun/Scene/SceneNode.hpp>
+#include <Dunjun/Scene.hpp>
+#include <Dunjun/Renderer.hpp>
 
 #include <Dunjun/Level.hpp>
 
@@ -50,37 +51,10 @@ GLOBAL Camera g_cameraPlayer;
 GLOBAL Camera g_cameraWorld;
 GLOBAL Camera* g_currentCamera = &g_cameraPlayer;
 
-class ModelNode : public SceneNode
-{
-public:
-	using UPtr = std::unique_ptr < ModelNode >;
-	ModelAsset* asset = nullptr;
-protected:
-	virtual void drawCurrent(Transform t)
-	{
-		ShaderProgram* shaders = asset->material->shaders;
-		const Texture* tex = asset->material->texture;
-
-		if (!shaders || !tex)
-			return;
-
-		shaders->use();
-		Texture::bind(tex, 0);
-
-		shaders->setUniform("u_camera", g_currentCamera->getMatrix());//g_camera.getMatrix());
-		shaders->setUniform("u_transform", t);
-		shaders->setUniform("u_tex", (Dunjun::u32)0);
-
-
-		asset->mesh->draw();
-
-		shaders->stopUsing();
-		Texture::bind(nullptr, 0);
-	}
-};
-
 GLOBAL SceneNode g_rootNode;
-GLOBAL ModelNode* g_player;
+GLOBAL SceneNode* g_player;
+
+GLOBAL Renderer g_renderer;
 
 GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
@@ -185,11 +159,13 @@ namespace Game
 
 		// Player
 		{
-			ModelNode::UPtr player = make_unique<ModelNode>();
+			SceneNode::UPtr player = make_unique<SceneNode>();
 			
 			player->name = "player";
-			player->asset = &g_sprite;
 			player->transform.position = { 4, 0.5, 4 };
+			
+			player->addComponent<MeshRenderer>(g_sprite);
+			player->addComponent<FaceCamera>(g_cameraWorld);
 			
 			g_player = player.get();
 
@@ -396,7 +372,7 @@ namespace Game
 			if (length(velDir) > 0)
 				velDir = normalize(velDir);
 
-			g_player->transform.position += playerVel * velDir * dt;
+			g_player->transform.position += (playerVel * superspeed) * velDir * dt;
 
 			{
 #if 0 // Billboard
@@ -525,7 +501,11 @@ namespace Game
 		
 		Texture::bind(nullptr, 0);
 
-		g_rootNode.draw();
+		g_renderer.setCamera(*g_currentCamera);
+
+		g_rootNode.draw(g_renderer);
+
+		g_renderer.reset();
 
 		Window::swapBuffers();
 	}
