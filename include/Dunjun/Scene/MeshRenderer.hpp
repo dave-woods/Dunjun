@@ -25,7 +25,7 @@ namespace Dunjun
 
 		}
 
-		virtual void draw(Renderer& renderer, Transform t)
+		virtual void draw(Renderer& renderer, Transform t) const
 		{
 			ShaderProgram* shaders = material->shaders;
 			const Texture* tex = material->texture;

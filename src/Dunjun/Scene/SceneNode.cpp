@@ -1,15 +1,26 @@
 #include <Dunjun/Scene/SceneNode.hpp>
 
 #include <algorithm>
+#include <sstream>
 
 namespace Dunjun
 {
+	namespace
+	{
+		GLOBAL usize idCount = 0;
+	}
+
 	SceneNode::SceneNode()
 		: m_children()
+		, id(idCount++)
 		, name("")
 		, transform()
 		, parent(nullptr)
+		, visible(true)
 	{
+		std::stringstream ss;
+		ss << "node_" << id;
+		name = ss.str();
 	}
 	
 	SceneNode& SceneNode::attachChild(UPtr child)
@@ -39,6 +50,16 @@ namespace Dunjun
 			return result;
 		}
 		// no child found
+		return nullptr;
+	}
+	
+	SceneNode* SceneNode::findChildById(const usize id) const
+	{
+		for (const UPtr& child : m_children)
+		{
+			if (child->id == id)
+				return child.get();
+		}
 		return nullptr;
 	}
 
@@ -82,8 +103,11 @@ namespace Dunjun
 				component->update(dt);
 	}
 
-	void SceneNode::draw(Renderer& renderer, Transform t)
+	void SceneNode::draw(Renderer& renderer, Transform t) const
 	{
+		if (!visible)
+			return;
+
 		t *= this->transform;
 		drawCurrent(renderer, t);
 		drawChildren(renderer, t);
@@ -114,22 +138,22 @@ namespace Dunjun
 			child->update(dt);
 	}
 
-	void SceneNode::drawCurrent(Renderer& renderer, Transform t)
+	void SceneNode::drawCurrent(Renderer& renderer, Transform t) const
 	{
 		// Do nothing by default
 	}
 
-	void SceneNode::drawChildren(Renderer& renderer, Transform t)
+	void SceneNode::drawChildren(Renderer& renderer, Transform t) const
 	{
-		for (UPtr& child : m_children)
+		for (const UPtr& child : m_children)
 			child->draw(renderer, t);
 	}
 
-	SceneNode* SceneNode::addComponent(NodeComponent* component)
+	SceneNode* SceneNode::addComponent(NodeComponent::UPtr component)
 	{
 		component->parent = this;
 		const std::type_index id(typeid(*component));
-		m_groupedComponents[id].push_back(component);
+		m_groupedComponents[id].push_back(std::move(component));
 
 		return this;
 	}

@@ -1,4 +1,7 @@
 #include <Dunjun/Renderer.hpp>
+#include <Dunjun/Scene/SceneNode.hpp>
+
+#include <string>
 
 namespace Dunjun
 {
@@ -17,6 +20,11 @@ namespace Dunjun
 		Texture::bind(nullptr, 0);
 
 		m_currentCamera = nullptr;
+	}
+
+	void Renderer::draw(const SceneNode& node, Transform t)
+	{
+		node.draw(*this, t);
 	}
 
 	void Renderer::setShaders(ShaderProgram* shaders)

@@ -34,18 +34,15 @@ struct ModelInstance
 	Transform transform;
 };
 
-
-
 namespace
 {
 	GLOBAL const char* default_windowTitle = "Dunjun v0.0.37";
-	GLOBAL const f32 TIME_STEP = (1.0f / 60.0f);
+	GLOBAL const f32 TimeStep = (1.0f / 60.0f);
 	GLOBAL bool g_running = true;
 } // anonymous
 
 GLOBAL ShaderProgram* g_defaultShader;
 GLOBAL ModelAsset g_sprite;
-GLOBAL std::vector<ModelInstance> g_instances;
 
 GLOBAL Camera g_cameraPlayer;
 GLOBAL Camera g_cameraWorld;
@@ -157,6 +154,16 @@ namespace Game
 	{
 		generateWorld();
 
+		{
+			SceneNode::UPtr level = make_unique<SceneNode>();
+
+			level->name = "level";
+
+			level->addComponent<MeshRenderer>(*g_level.mesh, *g_level.material);
+
+			g_rootNode.attachChild(std::move(level));
+		}
+
 		// Player
 		{
 			SceneNode::UPtr player = make_unique<SceneNode>();
@@ -167,6 +174,8 @@ namespace Game
 			player->addComponent<MeshRenderer>(g_sprite);
 			player->addComponent<FaceCamera>(g_cameraWorld);
 			
+			//player->visible = false;
+
 			g_player = player.get();
 
 			g_rootNode.attachChild(std::move(player));
@@ -419,29 +428,6 @@ namespace Game
 		}
 	}
 
-	INTERNAL void renderInstance(const ModelInstance& inst)
-	{
-		ModelAsset* asset = inst.asset;
-		ShaderProgram* shaders = asset->material->shaders;
-
-		shaders->setUniform("u_camera", g_currentCamera->getMatrix());
-		shaders->setUniform("u_transform", inst.transform);
-		shaders->setUniform("u_tex", (Dunjun::u32)0);
-
-		asset->mesh->draw();
-	}
-
-	INTERNAL void renderLevel(const Level& level)
-	{
-		ShaderProgram* shaders = level.material->shaders;
-
-		shaders->setUniform("u_camera", g_currentCamera->getMatrix());
-		shaders->setUniform("u_transform", level.transform);
-		shaders->setUniform("u_tex", (Dunjun::u32)0);
-
-		level.mesh->draw();
-	}
-
 	INTERNAL void render()
 	{
 		{
@@ -452,60 +438,10 @@ namespace Game
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		const ShaderProgram* currentShaders = nullptr;
-		const Texture* currentTexture = nullptr;
-
-		//Instances
-		for (const auto& inst : g_instances)
-		{
-			if (inst.asset->material->shaders != currentShaders)
-			{
-				if (currentShaders)
-					currentShaders->stopUsing();
-
-				currentShaders = inst.asset->material->shaders;
-				currentShaders->use();
-			}
-
-			if (inst.asset->material->texture != currentTexture)
-			{
-				currentTexture = inst.asset->material->texture;
-				Texture::bind(currentTexture, 0);
-			}
-
-			renderInstance(inst);
-		}
-
-		//Level
-		{
-			if (g_level.material->shaders != currentShaders)
-			{
-				if (currentShaders)
-					currentShaders->stopUsing();
-
-				currentShaders = g_level.material->shaders;
-				currentShaders->use();
-			}
-
-			if (g_level.material->texture != currentTexture)
-			{
-				currentTexture = g_level.material->texture;
-				Texture::bind(currentTexture, 0);
-			}
-
-			renderLevel(g_level);
-		}
-
-		if (currentShaders)
-			currentShaders->stopUsing();
-		
-		Texture::bind(nullptr, 0);
-
-		g_renderer.setCamera(*g_currentCamera);
-
-		g_rootNode.draw(g_renderer);
-
 		g_renderer.reset();
+		g_renderer.setCamera(*g_currentCamera);
+		g_renderer.draw(g_rootNode);
+
 
 		Window::swapBuffers();
 	}
@@ -550,13 +486,13 @@ namespace Game
 			if (accumulator > 1.2f) // Remove "loop of death"... (fullscreen)
 				accumulator = 1.2f;
 
-			while (accumulator >= TIME_STEP)
+			while (accumulator >= TimeStep)
 			{
-				accumulator -= TIME_STEP;
+				accumulator -= TimeStep;
 				Window::pollEvents();
 				handleInput();
 				Input::updateGamepads();
-				update(TIME_STEP);
+				update(TimeStep);
 			}
 
 			if (tc.update(0.5))

@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <deque>
 #include <map>
 #include <typeindex>
 
@@ -21,7 +22,7 @@ namespace Dunjun
 	{
 	public:
 		using UPtr = std::unique_ptr<SceneNode>;
-		using GroupedComponentMap = std::map < std::type_index, std::vector<NodeComponent*> > ;
+		using GroupedComponentMap = std::map < std::type_index, std::vector<NodeComponent::UPtr>>;
 
 		SceneNode();
 
@@ -31,38 +32,42 @@ namespace Dunjun
 		UPtr detachChild(const SceneNode& node);
 
 		SceneNode* findChildByName(const std::string& name) const;
-
-		std::string name;
+		SceneNode* findChildById(const usize id) const;
 
 		Transform getGlobalTransform() const;
-		Transform transform;
 
 		void onStart();
 		void update(f32 dt);
-		virtual void draw(Renderer& renderer, Transform t = Transform());
 
+		const usize id;
+		std::string name;
+		Transform transform;
 		ReadOnly<SceneNode*, SceneNode> parent;
+		bool visible = true;
 	
 	protected:
+		friend class Renderer;
+
 		virtual void onStartCurrent();
 		void onStartChildren();
 
 		virtual void updateCurrent(f32 dt);
 		void updateChildren(f32 dt);
 
-		virtual void drawCurrent(Renderer& renderer, Transform t);
-		void drawChildren(Renderer& renderer, Transform t);
+		void draw(Renderer& renderer, Transform t = Transform()) const;
+		virtual void drawCurrent(Renderer& renderer, Transform t) const;
+		void drawChildren(Renderer& renderer, Transform t) const;
 
-		std::vector<UPtr> m_children;
+		std::deque<UPtr> m_children;
 		GroupedComponentMap m_groupedComponents;
 	
 	public:
-		SceneNode* addComponent(NodeComponent* component);
+		SceneNode* addComponent(NodeComponent::UPtr component);
 
 		template <class Derived, class... Args>
 		inline SceneNode* addComponent(Args&&... args)
 		{
-			return addComponent(new Derived(args...));
+			return addComponent(make_unique<Derived>(args...));
 		}
 
 		inline void removeAllComponents()
@@ -73,7 +78,7 @@ namespace Dunjun
 		}
 
 		template <class ComponentType>
-		std::vector<NodeComponent*>* getComponents()
+		std::vector<NodeComponent::UPtr>* getComponents()
 		{
 			if (!std::is_base_of<NodeComponent, ComponentType>::value) //vale?
 				return nullptr;
@@ -95,7 +100,7 @@ namespace Dunjun
 		{
 			auto c = getComponents<ComponentType>();
 			if (c)
-				return std::static_pointer_cast<ComponentType>(c->at(0));
+				return std::static_pointer_cast<ComponentType>(c->at(0).get());
 			return nullptr;
 		}
 	};
