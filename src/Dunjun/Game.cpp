@@ -158,10 +158,10 @@ namespace Game
 			auto player = make_unique<SceneNode>();
 			
 			player->name = "player";
-			player->transform.position = { 4, 0.5, 4 };
+			player->transform.position = { 4 * 8, 0.5, 4 * 8 };
 			
 			player->addComponent<MeshRenderer>(g_sprite);
-			player->addComponent<FaceCamera>(g_cameraWorld);
+			player->addComponent<FaceCamera>(g_cameraPlayer);
 			
 			//player->visible = false;
 
@@ -183,14 +183,16 @@ namespace Game
 
 		g_cameraPlayer.transform.position = { -4, 7, 14 };
 		g_cameraPlayer.lookAt({ 4, 0, 0 });
-		g_cameraPlayer.projectionType = ProjectionType::Perspective;
+
 		g_cameraPlayer.fieldOfView = Degree(50.0f);
 		g_cameraPlayer.orthoScale = 8;
+
+		g_cameraPlayer.projectionType = ProjectionType::Perspective;
 
 		g_cameraWorld = g_cameraPlayer;
 
 		g_cameraPlayer.projectionType = ProjectionType::Orthographic;	
-
+		
 		g_rootNode.onStart();
 	}
 
@@ -393,8 +395,8 @@ namespace Game
 		}
 
 		// Camera lag in orthographic view
-		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x - 5, 10.0f * dt);
-		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z + 12, 10.0f * dt);
+		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x, 10.0f * dt);
+		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z, 10.0f * dt);
 
 		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
 		if (aspectRatio && Window::getFramebufferSize().y > 0)

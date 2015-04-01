@@ -42,7 +42,7 @@ namespace Dunjun
 		for (int i = 0; i < 4; i++)
 			darkRockTiles.emplace_back(i, 0);
 		RandomTileSet colorfulTiles;
-		for (int i = 3; i < 13; i++)
+		for (int i = 3; i < 12; i++)
 			colorfulTiles.emplace_back(i, 15);
 
 
@@ -50,9 +50,11 @@ namespace Dunjun
 			for (int j = 0; j < size.y; j++)
 				mapGrid[i][j] = blankTile;
 
+		TileId tile = colorfulTiles[m_random.getInt(0, colorfulTiles.size() - 1)];
+
 		for (int i = 0; i < size.x; i++)
 			for (int j = 0; j < size.y; j++)
-				mapGrid[i][j] = lightWoodTile;
+				mapGrid[i][j] = tile;
 
 		for (int i = 0; i < size.x; i++)
 		{
@@ -62,7 +64,7 @@ namespace Dunjun
 				{
 					addTileSurface(Vector3(i, 0, j), TileSurfaceFace::Up, mapGrid[i][j]);
 				}
-#if 1 // Walls
+#if 0 // Walls
 				else
 				{
 					addTileSurface(Vector3(i, size.z, j), TileSurfaceFace::Up, stoneTiles);
