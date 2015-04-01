@@ -81,6 +81,9 @@
     <ClCompile Include="src\Dunjun\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Dunjun\Level\Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Dunjun\Common.hpp">
@@ -204,6 +207,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Dunjun\Renderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Dunjun\Level\Room.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

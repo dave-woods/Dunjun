@@ -31,8 +31,8 @@ namespace Dunjun
 		SceneNode& attachChild(UPtr child);
 		UPtr detachChild(const SceneNode& node);
 
-		SceneNode* findChildByName(const std::string& name) const;
 		SceneNode* findChildById(const usize id) const;
+		SceneNode* findChildByName(const std::string& name) const;
 
 		Transform getGlobalTransform() const;
 

@@ -75,6 +75,7 @@
     <ClCompile Include="src\Dunjun\Game.cpp" />
     <ClCompile Include="src\Dunjun\Input.cpp" />
     <ClCompile Include="src\Dunjun\Level.cpp" />
+    <ClCompile Include="src\Dunjun\Level\Room.cpp" />
     <ClCompile Include="src\Dunjun\Math\Matrix4.cpp" />
     <ClCompile Include="src\Dunjun\Math\Constants.cpp" />
     <ClCompile Include="src\Dunjun\Math\Functions\Transformation.cpp" />
@@ -101,6 +102,7 @@
     <ClInclude Include="include\Dunjun\Game.hpp" />
     <ClInclude Include="include\Dunjun\Image.hpp" />
     <ClInclude Include="include\Dunjun\Input.hpp" />
+    <ClInclude Include="include\Dunjun\Level\Room.hpp" />
     <ClInclude Include="include\Dunjun\Math.hpp" />
     <ClInclude Include="include\Dunjun\Math\Angle.hpp" />
     <ClInclude Include="include\Dunjun\Math\Constants.hpp" />

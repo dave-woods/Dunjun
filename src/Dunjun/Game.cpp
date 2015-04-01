@@ -16,6 +16,7 @@
 #include <Dunjun/Renderer.hpp>
 
 #include <Dunjun/Level.hpp>
+#include <Dunjun/Level/Room.hpp>
 
 #include <GLFW/glfw3.h>
 
@@ -154,19 +155,24 @@ namespace Game
 	{
 		generateWorld();
 
+		// Level
 		{
-			SceneNode::UPtr level = make_unique<SceneNode>();
+			auto level = make_unique<SceneNode>();
 
 			level->name = "level";
 
-			level->addComponent<MeshRenderer>(*g_level.mesh, *g_level.material);
+			level->addComponent<MeshRenderer>(g_level.mesh, g_level.material);
+
+			level->visible = false;
 
 			g_rootNode.attachChild(std::move(level));
 		}
 
+		
+
 		// Player
 		{
-			SceneNode::UPtr player = make_unique<SceneNode>();
+			auto player = make_unique<SceneNode>();
 			
 			player->name = "player";
 			player->transform.position = { 4, 0.5, 4 };
@@ -196,6 +202,19 @@ namespace Game
 			}
 		}
 
+		// Level\Room
+		{
+			Random random(1);
+
+			auto room = make_unique<Room>(random, Room::Size(10, 10));
+
+			room->material = &g_materials["terrain"];
+			room->generate();
+			room->transform = g_player->transform;
+
+			g_rootNode.attachChild(std::move(room));
+		}
+
 		g_cameraPlayer.transform.position = { -4, 7, 14 };
 		g_cameraPlayer.lookAt({ 4, 0, 0 });
 		g_cameraPlayer.projectionType = ProjectionType::Perspective;
@@ -204,7 +223,9 @@ namespace Game
 
 		g_cameraWorld = g_cameraPlayer;
 
-		g_cameraPlayer.projectionType = ProjectionType::Orthographic;		
+		g_cameraPlayer.projectionType = ProjectionType::Orthographic;	
+
+		g_rootNode.onStart();
 	}
 
 	INTERNAL void update(f32 dt)
