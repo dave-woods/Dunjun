@@ -9,6 +9,7 @@
 
 namespace Dunjun
 {
+	class Renderer;
 	enum class AttribLocation : u32
 	{
 		Position = 0,
@@ -52,8 +53,6 @@ public:
 
 	void addData(const Data& data);
 	void generate() const;
-	void draw() const;
-
 
 	inline void destroy() const
 	{
@@ -61,8 +60,11 @@ public:
 		glDeleteBuffers(1, &m_ibo);
 	}
 
-
 private:
+	friend class Renderer;
+	
+	void draw() const;
+
 	Data m_data;
 	mutable b32 m_generated;
 	

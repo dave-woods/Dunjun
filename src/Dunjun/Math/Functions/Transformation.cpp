@@ -111,7 +111,9 @@ namespace Dunjun
 		return result;
 	}
 
-	Matrix4 matrix4LookAt(const Vector3& eye, const Vector3& center, const Vector3& up)
+
+	template<>
+	Matrix4 lookAt<Matrix4>(const Vector3& eye, const Vector3& center, const Vector3& up)
 	{
 		const Vector3 f(normalize(center - eye));
 		const Vector3 s(normalize(cross(f, up)));
@@ -138,20 +140,22 @@ namespace Dunjun
 		return result;
 	}
 
-	Quaternion quaternionLookAt(const Vector3& eye, const Vector3& center, const Vector3& up)
+	template<>
+	Quaternion lookAt<Quaternion>(const Vector3& eye, const Vector3& center, const Vector3& up)
 	{
 		const f32 similar = 0.001f;
 
 		if (length(center - eye) < similar)
 			return Quaternion(); // ignore as you cannot you look at where you are
 
-		const Vector3 f(normalize(center - eye));
+		return matrix4ToQuaternion(lookAt<Matrix4>(eye, center, up));
+		/*const Vector3 f(normalize(center - eye));
 		const Vector3 s(normalize(cross(f, up)));
 		const Vector3 u(cross(s, f));
 		const Vector3 refUp(normalize(up));
 
 		const f32 m = std::sqrt(2.0f + 2.00 * dot(u, refUp));
 		Vector3 v = (1.0f / m) * cross(u, refUp);
-		return Quaternion(v, 0.5f * m);
+		return Quaternion(v, 0.5f * m);*/
 	}
 }

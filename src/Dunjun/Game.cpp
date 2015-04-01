@@ -15,7 +15,7 @@
 #include <Dunjun/Scene.hpp>
 #include <Dunjun/Renderer.hpp>
 
-#include <Dunjun/Level.hpp>
+#include <Dunjun/Level/Level.hpp>
 #include <Dunjun/Level/Room.hpp>
 
 #include <GLFW/glfw3.h>
@@ -57,7 +57,7 @@ GLOBAL Renderer g_renderer;
 GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
 
-GLOBAL Level g_level;
+GLOBAL Level* g_level;
 
 namespace Game
 {
@@ -146,29 +146,12 @@ namespace Game
 
 	INTERNAL void generateWorld()
 	{
-		g_level.material = &g_materials["terrain"];
-		g_level.generate();
 		g_rootNode.onStart();
 	}
 
 	INTERNAL void loadInstances()
 	{
 		generateWorld();
-
-		// Level
-		{
-			auto level = make_unique<SceneNode>();
-
-			level->name = "level";
-
-			level->addComponent<MeshRenderer>(g_level.mesh, g_level.material);
-
-			level->visible = false;
-
-			g_rootNode.attachChild(std::move(level));
-		}
-
-		
 
 		// Player
 		{
@@ -187,32 +170,15 @@ namespace Game
 			g_rootNode.attachChild(std::move(player));
 		}
 
+		// Level
 		{
-			bool escape = false;
-			for (int j = 0; j < g_level.mapHeight && !escape; j++)
-			{
-				for (int i = 0; i < g_level.mapWidth && !escape; i++)
-				{
-					if (g_level.mapGrid[i][j] != Level::TileId(-1, -1))
-					{
-						g_player->transform.position = Vector3((f32)i, 0.5, (f32)j);
-						escape = true;
-					}
-				}
-			}
-		}
+			auto level = make_unique<Level>();
 
-		// Level\Room
-		{
-			Random random(1);
+			level->material = &g_materials["terrain"];
+			level->generate();
 
-			auto room = make_unique<Room>(random, Room::Size(10, 10));
-
-			room->material = &g_materials["terrain"];
-			room->generate();
-			room->transform = g_player->transform;
-
-			g_rootNode.attachChild(std::move(room));
+			g_level = level.get();
+			g_rootNode.attachChild(std::move(level));
 		}
 
 		g_cameraPlayer.transform.position = { -4, 7, 14 };

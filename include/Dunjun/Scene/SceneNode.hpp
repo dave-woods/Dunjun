@@ -6,6 +6,7 @@
 #include <Dunjun/Transform.hpp>
 #include <Dunjun/NonCopyable.hpp>
 #include <Dunjun/Renderer.hpp>
+#include <Dunjun/Drawable.hpp>
 
 #include <Dunjun/Scene/NodeComponent.hpp>
 
@@ -18,7 +19,7 @@
 
 namespace Dunjun
 {
-	class SceneNode : private NonCopyable
+	class SceneNode : public Drawable, private NonCopyable
 	{
 	public:
 		using UPtr = std::unique_ptr<SceneNode>;

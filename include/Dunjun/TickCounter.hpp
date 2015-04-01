@@ -13,7 +13,7 @@ public:
 		bool reset = false;
 		if (m_clock.getElapsedTime() >= period)
 		{
-			m_tickRate = m_tick * (usize)(1.0 / period);
+			m_tickRate = m_tick * (1.0 / period);
 			m_tick = 0;
 			reset = true;
 			m_clock.restart();
@@ -24,11 +24,11 @@ public:
 		return reset;
 	}
 
-	inline usize getTickRate() const { return m_tickRate; }
+	inline f64 getTickRate() const { return m_tickRate; }
 
 private:
 	usize m_tick = 0;
-	usize m_tickRate = 0;
+	f64 m_tickRate = 0;
 	Clock m_clock;
 
 };

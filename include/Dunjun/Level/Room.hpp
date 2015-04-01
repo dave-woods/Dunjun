@@ -56,14 +56,15 @@ namespace Dunjun
 
 		struct Size
 		{
-			Size(u16 x, u16 y)
+			Size(u16 x, u16 y, u16 z)
 				: x(x)
 				, y(y)
+				, z(z)
 			{}
 
 			u16 x = 0;
 			u16 y = 0;
-			//u16 z = 0;
+			u16 z = 0;
 		};
 
 		explicit Room(Random& random, const Room::Size& size);
@@ -71,14 +72,15 @@ namespace Dunjun
 		virtual ~Room();
 
 		const Room::Size size;
-		Mesh* mesh;
 		const Material* material;
 		
 		void generate();
 		
 	protected:
+		Mesh* m_mesh;
 		Random& m_random;
 		Mesh::Data m_meshData;
+		bool m_generated;
 
 		void addTileSurface(const Vector3& position, TileSurfaceFace face, const TileId& tilePos);
 		void addTileSurface(const Vector3& position, TileSurfaceFace face, const RandomTileSet& randomTilePosSet);
