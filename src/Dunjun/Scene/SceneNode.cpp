@@ -5,14 +5,18 @@
 
 namespace Dunjun
 {
-	namespace
+	namespace Impl
 	{
-		GLOBAL usize idCount = 0;
+		inline usize getUniqueSceneNodeId()
+		{
+			LOCAL_INTERNAL usize lastId = 0;
+			return lastId++;
+		}
 	}
 
 	SceneNode::SceneNode()
 		: m_children()
-		, id(idCount++)
+		, id(Impl::getUniqueSceneNodeId())
 		, name("")
 		, transform()
 		, parent(nullptr)
@@ -88,19 +92,16 @@ namespace Dunjun
 	{
 		onStartCurrent();
 		onStartChildren();
-		for (auto& group : m_groupedComponents)
-			for (auto& component : group.second)
-				component->onStart();
-
+		for (auto& component : m_components)
+			component->onStart();
 	}
 
 	void SceneNode::update(f32 dt)
 	{
 		updateCurrent(dt);
 		updateChildren(dt);
-		for (auto& group : m_groupedComponents)
-			for (auto& component : group.second)
-				component->update(dt);
+		for (auto& component : m_components)
+			component->update(dt);
 	}
 
 	void SceneNode::draw(Renderer& renderer, Transform t) const
@@ -111,9 +112,8 @@ namespace Dunjun
 		t *= this->transform;
 		drawCurrent(renderer, t);
 		drawChildren(renderer, t);
-		for (auto& group : m_groupedComponents)
-			for (auto& component : group.second)
-				component->draw(renderer, t);
+		for (auto& component : m_components)
+			component->draw(renderer, t);
 	}
 
 	void SceneNode::onStartCurrent()
@@ -148,14 +148,4 @@ namespace Dunjun
 		for (const UPtr& child : m_children)
 			child->draw(renderer, t);
 	}
-
-	SceneNode* SceneNode::addComponent(NodeComponent::UPtr component)
-	{
-		component->parent = this;
-		const std::type_index id(typeid(*component));
-		m_groupedComponents[id].push_back(std::move(component));
-
-		return this;
-	}
-
 }

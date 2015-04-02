@@ -159,9 +159,11 @@ namespace Game
 			
 			player->name = "player";
 			player->transform.position = { 4 * 8, 0.5, 4 * 8 };
-			
+			player->transform.orientation = angleAxis(Degree(45), { 0, 1, 0 }) * angleAxis(Degree(-30), { 1, 0, 0 });
+
+
 			player->addComponent<MeshRenderer>(g_sprite);
-			player->addComponent<FaceCamera>(g_cameraPlayer);
+			//player->addComponent<FaceCamera>(g_cameraPlayer);
 			
 			//player->visible = false;
 
@@ -181,8 +183,8 @@ namespace Game
 			g_rootNode.attachChild(std::move(level));
 		}
 
-		g_cameraPlayer.transform.position = { -4, 7, 14 };
-		g_cameraPlayer.lookAt({ 4, 0, 0 });
+		g_cameraPlayer.transform.position = { 3, 2, 3 };
+		g_cameraPlayer.transform.orientation = angleAxis(Degree(45), { 0, 1, 0 }) * angleAxis(Degree(-30), { 1, 0, 0 });
 
 		g_cameraPlayer.fieldOfView = Degree(50.0f);
 		g_cameraPlayer.orthoScale = 8;

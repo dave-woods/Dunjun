@@ -56,7 +56,7 @@ namespace Dunjun
 
 		struct Size
 		{
-			Size(u16 x, u16 y, u16 z)
+			Size(u16 x, u16 y, s32 z)
 				: x(x)
 				, y(y)
 				, z(z)
@@ -64,12 +64,12 @@ namespace Dunjun
 
 			u16 x = 0;
 			u16 y = 0;
-			u16 z = 0;
+			s32 z = 0;
 		};
 
 		explicit Room(Random& random, const Room::Size& size);
 		
-		virtual ~Room();
+		virtual ~Room() override;
 
 		const Room::Size size;
 		const Material* material;

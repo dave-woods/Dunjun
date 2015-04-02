@@ -63,8 +63,9 @@ namespace Dunjun
 				if (mapGrid[i][j] != blankTile)
 				{
 					addTileSurface(Vector3(i, 0, j), TileSurfaceFace::Up, mapGrid[i][j]);
+					addTileSurface(Vector3(i, size.z, j), TileSurfaceFace::Down, stoneTiles);
 				}
-#if 0 // Walls
+#if 1 // Walls
 				else
 				{
 					addTileSurface(Vector3(i, size.z, j), TileSurfaceFace::Up, stoneTiles);

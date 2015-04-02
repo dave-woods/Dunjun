@@ -23,7 +23,7 @@ public:
 
 private:
 
-	void placeRooms();
+	void placeRooms(int floor);
 
 	std::vector<Room> m_rooms;
 

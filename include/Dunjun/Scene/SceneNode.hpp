@@ -10,6 +10,8 @@
 
 #include <Dunjun/Scene/NodeComponent.hpp>
 
+#include <array>
+#include <bitset>
 #include <memory>
 #include <string>
 #include <vector>
@@ -19,11 +21,36 @@
 
 namespace Dunjun
 {
+	using ComponentId = usize;
+	
+	namespace Impl
+	{
+		inline ComponentId getUniqueComponentId()
+		{
+			LOCAL_INTERNAL ComponentId lastId = 0;
+			return lastId++;
+		}
+	}
+
+	template <class ComponentType>
+	inline ComponentId getComponentTypeId()
+	{
+		static_assert(std::is_base_of<NodeComponent, ComponentType>::value,
+			"ComponentType must inherit from NodeComponent.");
+
+		LOCAL_INTERNAL ComponentId typeId = Impl::getUniqueComponentId();
+		return typeId;
+	}
+
 	class SceneNode : public Drawable, private NonCopyable
 	{
 	public:
 		using UPtr = std::unique_ptr<SceneNode>;
 		using GroupedComponentMap = std::map < std::type_index, std::vector<NodeComponent::UPtr>>;
+
+		GLOBAL const usize MaxComponents = 32;
+		using ComponentBitset = std::bitset<MaxComponents>;
+		using ComponentArray = std::array<NodeComponent*, MaxComponents>;
 
 		SceneNode();
 
@@ -46,6 +73,37 @@ namespace Dunjun
 		ReadOnly<SceneNode*, SceneNode> parent;
 		bool visible = true;
 	
+		template <class ComponentType, class... Args>
+		ComponentType& addComponent(Args&&... args)
+		{
+			assert(!hasComponent<ComponentType>());
+
+			ComponentType* component(new ComponentType(std::forward<Args>(args)...));
+			component->parent = this;
+			std::unique_ptr<NodeComponent> uPtr(component);
+			m_components.push_back(std::move(uPtr));
+
+			m_componentArray[getComponentTypeId<ComponentType>()] = component;
+
+			m_componentBitset[getComponentTypeId<ComponentType>()] = true;
+
+			return *component;
+		}
+
+		template <class ComponentType>
+		bool hasComponent() const
+		{
+			return m_componentBitset[getComponentTypeId<ComponentType>()];
+		}
+
+		template <class ComponentType>
+		NodeComponent& getComponent()
+		{
+			assert(hasComponent<ComponentType>());
+			auto ptr = m_componentArray[getComponentTypeId<ComponentType>()];
+			return *reinterpret_cast<ComponentType*>(ptr);
+		}
+
 	protected:
 		friend class Renderer;
 
@@ -60,50 +118,11 @@ namespace Dunjun
 		void drawChildren(Renderer& renderer, Transform t) const;
 
 		std::deque<UPtr> m_children;
-		GroupedComponentMap m_groupedComponents;
-	
-	public:
-		SceneNode* addComponent(NodeComponent::UPtr component);
-
-		template <class Derived, class... Args>
-		inline SceneNode* addComponent(Args&&... args)
-		{
-			return addComponent(make_unique<Derived>(args...));
-		}
-
-		inline void removeAllComponents()
-		{
-			for (auto& group : m_groupedComponents)
-				group.second.clear();
-			m_groupedComponents.clear();
-		}
-
-		template <class ComponentType>
-		std::vector<NodeComponent::UPtr>* getComponents()
-		{
-			if (!std::is_base_of<NodeComponent, ComponentType>::value) //vale?
-				return nullptr;
-
-			if (m_groupedComponents.size() == 0)
-				return nullptr;
-
-			const std::type_index id(typeid(ComponentType));
-			for (auto& group : m_groupedComponents)
-			{
-				if (group.first == id)
-					return &m_groupedComponents[id];
-			}
-			return nullptr;
-		}
-
-		template <class ComponentType>
-		NodeComponent* getComponent()
-		{
-			auto c = getComponents<ComponentType>();
-			if (c)
-				return std::static_pointer_cast<ComponentType>(c->at(0).get());
-			return nullptr;
-		}
+		//GroupedComponentMap m_groupedComponents;
+		
+		std::vector<NodeComponent::UPtr> m_components;
+		ComponentArray m_componentArray;
+		ComponentBitset m_componentBitset;
 	};
 }
 

@@ -9,10 +9,12 @@ namespace Dunjun
 
 	void Level::generate()
 	{
-		placeRooms();	
+		placeRooms(-1);
+		placeRooms(0);
+		placeRooms(1);
 	}
 
-	void Level::placeRooms()
+	void Level::placeRooms(int floor)
 	{
 		if (!material)
 		{
@@ -42,42 +44,44 @@ namespace Dunjun
 			for (int n = 0; n < 6; n++)
 			{
 				int d = m_random.getInt(0, 3);
-
-				switch (d)
+				for (int l = 0; l < 4; l++)
 				{
-				case 0: // right
-					x++;
-					break;
-				case 1: // up
-					y++;
-					break;
-				case 2: // left
-					x--;
-					break;
-				case 3: // down
-					y--;
-					break;
+					switch (d)
+					{
+					case 0: // right
+						x++;
+						break;
+					case 1: // up
+						y++;
+						break;
+					case 2: // left
+						x--;
+						break;
+					case 3: // down
+						y--;
+						break;
+					}
+
+					if (x > w - 1)
+						x = w - 1;
+					if (y > h - 1)
+						y = h - 1;
+					if (x < 0)
+						x = 0;
+					if (y < 0)
+						y = 0;
+
+					if (grid[x][y])
+					{
+						x = prevX;
+						y = prevY;
+						continue;
+					}
+
+					grid[x][y] = true;
+					prevX = x;
+					prevY = y;
 				}
-
-				if (x > w - 1)
-					x = w - 1;
-				if (y > h - 1)
-					y = h - 1;
-				if (x < 0)
-					x = 0;
-				if (y < 0)
-					y = 0;
-
-				if (grid[x][y])
-				{
-					x = prevX;
-					y = prevY;
-					continue;
-				}
-
-				grid[x][y] = true;
-				prevX = x;
-				prevY = y;
 			}
 		}
 
@@ -120,6 +124,7 @@ namespace Dunjun
 
 						if (grid[x][y])
 							continue;
+
 						grid[x][y] = true;
 						break;
 					}
@@ -136,6 +141,7 @@ namespace Dunjun
 
 				auto room = make_unique<Room>(m_random, size);
 				room->transform.position.x = size.x * i;
+				room->transform.position.y = size.z * floor;
 				room->transform.position.z = size.y * j;
 
 				room->material = this->material;
