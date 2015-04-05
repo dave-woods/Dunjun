@@ -14,6 +14,7 @@ namespace Window
 
 
 	GLFWwindow* createWindow(GLFWmonitor* monitor);
+	/*GLFWwindow* createWindow(GLFWmonitor* monitor, u32 width, u32 height);*/
 	void destroyWindow();
 	void destroyWindow(GLFWwindow* windowPtr);
 

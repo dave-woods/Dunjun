@@ -63,6 +63,47 @@ namespace Window
 
 		return w;
 	}
+
+	// Create window with size dimensions
+	/*GLFWwindow* createWindow(GLFWmonitor* monitor, u32 width, u32 height)
+	{
+		glfwDefaultWindowHints();
+		glfwWindowHint(GLFW_VERSION_MAJOR, 2);
+		glfwWindowHint(GLFW_VERSION_MINOR, 1);
+		glfwWindowHint(GLFW_FOCUSED, true);
+
+		if (monitor) // fullscreen
+		{
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+			glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+			glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+			glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+			glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+
+			glfwWindowHint(GLFW_RESIZABLE, false);
+
+			Window::g_width = mode->width;
+			Window::g_height = mode->height;
+		}
+		else
+		{
+			glfwWindowHint(GLFW_RESIZABLE, true);
+
+			Window::g_width = width;
+			Window::g_height = height;
+		}
+
+		GLFWwindow* w = glfwCreateWindow(Window::g_width, Window::g_height, "Dunjun", monitor, Window::g_ptr);
+
+		glfwSetFramebufferSizeCallback(w, framebufferSizeCallback);
+		glfwSetWindowSizeCallback(w, resizeCallback);
+		glfwSetWindowRefreshCallback(w, windowRefreshCallback);
+
+		glfwGetWindowSize(w, &Window::g_width, &Window::g_height);
+
+		return w;
+	}*/
 	
 	void destroyWindow()
 	{
@@ -86,7 +127,7 @@ namespace Window
 
 	bool shouldClose()
 	{
-		return glfwWindowShouldClose(Window::g_ptr);
+		return glfwWindowShouldClose(Window::g_ptr) == 1;
 	}
 
 	void swapBuffers()
@@ -131,7 +172,7 @@ namespace Window
 
 	Vector2 getWindowSize()
 	{
-		return Vector2(Window::g_width, Window::g_height);
+		return Vector2(static_cast<f32>(Window::g_width), static_cast<f32>(Window::g_height));
 	}
 
 	Vector2 getFramebufferSize()
@@ -146,11 +187,11 @@ namespace Window
 
 	bool isInFocus()
 	{
-		return glfwGetWindowAttrib(Window::g_ptr, GLFW_FOCUSED);
+		return glfwGetWindowAttrib(Window::g_ptr, GLFW_FOCUSED) == 1;
 	}
 	bool isIconified()
 	{
-		return glfwGetWindowAttrib(Window::g_ptr, GLFW_ICONIFIED);
+		return glfwGetWindowAttrib(Window::g_ptr, GLFW_ICONIFIED) == 1;
 	}
 
 	INTERNAL void resizeCallback(GLFWwindow* window, int width, int height)
@@ -171,7 +212,7 @@ namespace Window
 	INTERNAL void windowRefreshCallback(GLFWwindow* window)
 	{
 		Vector2 fbSize = getFramebufferSize();
-		glViewport(0, 0, fbSize.x, fbSize.y);
+		glViewport(0, 0, (GLsizei)fbSize.x, (GLsizei)fbSize.y);
 
 		glfwMakeContextCurrent(window);
 

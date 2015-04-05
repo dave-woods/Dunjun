@@ -3,8 +3,8 @@
 namespace Dunjun
 {
 	Level::Level()
-		: m_random()
-		, m_rooms()
+		: m_random(1337)
+		, rooms()
 	{}
 
 	void Level::generate()
@@ -22,14 +22,9 @@ namespace Dunjun
 			return;
 		}
 
-		//m_random.setSeed(1);
-
 		const int gridWidth = 100;
 		const int gridHeight = 100;
 		const Room::Size size(9, 9, 3);
-
-		//transform.position.x = -gridWidth * size.x / 2;
-		//transform.position.z = -gridHeight * size.y / 2;
 
 		bool grid[gridWidth][gridHeight] = { { false } };
 
@@ -132,7 +127,7 @@ namespace Dunjun
 
 				auto room = make_unique<Room>(m_random, size);
 				room->transform.position.x = size.x * (i - gridWidth / 2.0f);
-				room->transform.position.y = size.z * floor;
+				room->transform.position.y = size.z * (f32)floor;
 				room->transform.position.z = size.y * (j - gridHeight / 2.0f);
 
 				room->material = this->material;
@@ -165,6 +160,8 @@ namespace Dunjun
 				}
 
 				room->generate(northDoor, eastDoor, southDoor, westDoor);
+				
+				rooms.push_back(room.get());
 
 				attachChild(std::move(room));
 			}

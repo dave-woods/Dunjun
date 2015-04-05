@@ -56,9 +56,9 @@ namespace Dunjun
 			for (int j = 0; j < size.y; j++)
 				mapGrid[i][j] = tile;
 
-		for (int i = 0; i < size.x; i++)
+		for (f32 i = 0; i < size.x; i++)
 		{
-			for (int j = 0; j < size.y; j++)
+			for (f32 j = 0; j < size.y; j++)
 			{
 				if (mapGrid[i][j] != blankTile)
 				{

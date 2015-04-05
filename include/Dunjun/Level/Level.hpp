@@ -20,12 +20,11 @@ public:
 	
 	Transform transform;
 	Material* material;
+	std::vector<Room*> rooms;
 
 private:
 
 	void placeRooms(int floor);
-
-	std::vector<Room> m_rooms;
 
 	Random m_random;
 };

@@ -58,12 +58,12 @@ namespace Dunjun
 		if (!m_generated)
 			generate();
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-
 		glEnableVertexAttribArray((u32)AttribLocation::Position);
 		glEnableVertexAttribArray((u32)AttribLocation::TexCoord);
 		glEnableVertexAttribArray((u32)AttribLocation::Color);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 
 		glVertexAttribPointer((u32)AttribLocation::Position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
 		glVertexAttribPointer((u32)AttribLocation::TexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector3)));
@@ -71,11 +71,11 @@ namespace Dunjun
 
 		glDrawElements(m_drawType, m_drawCount, GL_UNSIGNED_INT, nullptr);
 
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 		glDisableVertexAttribArray((u32)AttribLocation::Position);
 		glDisableVertexAttribArray((u32)AttribLocation::TexCoord);
 		glDisableVertexAttribArray((u32)AttribLocation::Color);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }

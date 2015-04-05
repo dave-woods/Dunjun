@@ -192,7 +192,9 @@ namespace Game
 
 		g_cameraWorld = g_cameraPlayer;
 
-		g_cameraPlayer.projectionType = ProjectionType::Orthographic;	
+		g_cameraPlayer.projectionType = ProjectionType::Orthographic;
+
+		g_currentCamera = &g_cameraWorld;
 		
 		g_rootNode.onStart();
 	}
@@ -416,6 +418,35 @@ namespace Game
 				g_currentCamera = &g_cameraWorld;
 			}
 		}
+
+// Culling (COULD BE OPTIMISED)
+#if 1
+		for (auto& room : g_level->rooms)
+		{
+			Vector3 roomPos = room->transform.position;
+			roomPos.x += room->size.x / 2.0f;
+			roomPos.z += room->size.y / 2.0f;
+			const Vector3 playerPos = g_cameraWorld.transform.position;
+
+			const Vector3 dp = roomPos - playerPos;
+
+			// distance culling
+			const f32 dist = length(dp);
+			if (dist < 50)
+			{
+				const Vector3 f = g_cameraWorld.forward();
+				f32 cosTheta = dot(f, normalize(dp));
+				Radian theta = Math::acos(cosTheta);
+				// cone culling with field of view + 25%
+				if (Math::abs(theta) <= 1.25f * g_cameraWorld.fieldOfView || dist < 10)
+					room->visible = true;
+				else
+					room->visible = false;
+			}
+			else
+				room->visible = false;
+		}
+#endif
 	}
 
 	INTERNAL void render()
@@ -424,14 +455,13 @@ namespace Game
 			Vector2 fbSize = Window::getFramebufferSize();
 			glViewport(0, 0, (GLsizei)fbSize.x, (GLsizei)fbSize.y);
 		}
-		
+
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		g_renderer.reset();
 		g_renderer.setCamera(*g_currentCamera);
 		g_renderer.draw(g_rootNode);
-
 
 		Window::swapBuffers();
 	}
