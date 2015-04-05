@@ -21,7 +21,7 @@ namespace Dunjun
 		delete m_mesh;
 	}
 
-	void Room::generate()
+	void Room::generate(bool northDoor, bool eastDoor, bool southDoor, bool westDoor)
 	{
 		if (m_generated)
 			return;
@@ -91,13 +91,45 @@ namespace Dunjun
 					else
 					{
 						if (i == 0)
-							addTileSurface(Vector3(i, k, j), TileSurfaceFace::Right, stoneTiles);
-						if (i == size.x - 1)
-							addTileSurface(Vector3(i + 1, k, j), TileSurfaceFace::Left, stoneTiles);
+						{
+							if (westDoor)
+							{
+								if (j != size.y / 2)
+									addTileSurface(Vector3(i, k, j), TileSurfaceFace::Right, stoneTiles);
+							}
+							else
+								addTileSurface(Vector3(i, k, j), TileSurfaceFace::Right, stoneTiles);
+						}
+						else if (i == size.x - 1)
+						{
+							if (eastDoor)
+							{
+								if (j != size.y / 2)
+									addTileSurface(Vector3(i + 1, k, j), TileSurfaceFace::Left, stoneTiles);
+							}
+							else
+								addTileSurface(Vector3(i + 1, k, j), TileSurfaceFace::Left, stoneTiles);
+						}
 						if (j == 0)
-							addTileSurface(Vector3(i, k, j), TileSurfaceFace::Front, stoneTiles);
-						if (j == size.y - 1)
-							addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Back, stoneTiles);
+						{
+							if (northDoor)
+							{
+								if (i != size.x / 2)
+									addTileSurface(Vector3(i, k, j), TileSurfaceFace::Front, stoneTiles);
+							}
+							else
+								addTileSurface(Vector3(i, k, j), TileSurfaceFace::Front, stoneTiles);
+						}
+						else if (j == size.y - 1)
+						{
+							if (southDoor)
+							{
+								if (i != size.x / 2)
+									addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Back, stoneTiles);
+							}
+							else
+								addTileSurface(Vector3(i, k, j + 1), TileSurfaceFace::Back, stoneTiles);
+						}
 					}
 				}
 #endif

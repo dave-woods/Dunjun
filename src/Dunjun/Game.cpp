@@ -20,7 +20,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -158,12 +157,12 @@ namespace Game
 			auto player = make_unique<SceneNode>();
 			
 			player->name = "player";
-			player->transform.position = { 4 * 8, 0.5, 4 * 8 };
+			player->transform.position = { 4, 0.5, 4 };
 			player->transform.orientation = angleAxis(Degree(45), { 0, 1, 0 }) * angleAxis(Degree(-30), { 1, 0, 0 });
 
 
 			player->addComponent<MeshRenderer>(g_sprite);
-			//player->addComponent<FaceCamera>(g_cameraPlayer);
+			//player->addComponent<FaceCamera>(g_cameraWorld);
 			
 			//player->visible = false;
 
@@ -214,17 +213,17 @@ namespace Game
 			const f32 deadZone = 0.21f;
 
 			Vector2 rts = axes.rightThumbstick;
-			if (std::abs(rts.x) < deadZone)
+			if (Math::abs(rts.x) < deadZone)
 			rts.x = 0;
-			if (std::abs(rts.y) < deadZone)
+			if (Math::abs(rts.y) < deadZone)
 			rts.y = 0;
 
 			g_cameraWorlld.offsetOrientation(-lookSensitivity * Radian(rts.x * dt), lookSensitivity * Radian(rts.y * dt));
 
 			Vector2 lts = axes.leftThumbstick;
-			if (std::abs(lts.x) < deadZone)
+			if (Math::abs(lts.x) < deadZone)
 			lts.x = 0;
-			if (std::abs(lts.y) < deadZone)
+			if (Math::abs(lts.y) < deadZone)
 			lts.y = 0
 
 			if (length(lts) > 1.0f)
@@ -385,7 +384,7 @@ namespace Game
 					player.transform.orientation = Quaternion();
 				else
 				{
-					Radian a(-std::atan(f.z / f.x));
+					Radian a(-Math::atan(f.z / f.x));
 					a += Radian(Constants::Tau / 4.0f);
 					if (f.x >= 0)
 						a -= Radian(Constants::Tau / 2.0f);
@@ -397,8 +396,8 @@ namespace Game
 		}
 
 		// Camera lag in orthographic view
-		g_cameraPlayer.transform.position.x = lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x, 10.0f * dt);
-		g_cameraPlayer.transform.position.z = lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z, 10.0f * dt);
+		g_cameraPlayer.transform.position.x = Math::lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x, 10.0f * dt);
+		g_cameraPlayer.transform.position.z = Math::lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z, 10.0f * dt);
 
 		f32 aspectRatio = Window::getFramebufferSize().x / Window::getFramebufferSize().y;
 		if (aspectRatio && Window::getFramebufferSize().y > 0)

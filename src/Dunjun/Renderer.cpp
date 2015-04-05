@@ -6,13 +6,10 @@
 namespace Dunjun
 {
 	Renderer::Renderer()
-	{
-
-	}
+	{}
 
 	void Renderer::reset()
 	{
-
 		if (m_currentShaders)
 			m_currentShaders->stopUsing();
 		m_currentShaders = nullptr;
@@ -49,10 +46,13 @@ namespace Dunjun
 
 	void Renderer::setShaders(const ShaderProgram* shaders)
 	{
-		if (m_currentShaders && shaders != m_currentShaders)
-			m_currentShaders->stopUsing();
-		m_currentShaders = shaders;
-		m_currentShaders->use();
+		if (shaders != m_currentShaders)
+		{
+			if (m_currentShaders)
+				m_currentShaders->stopUsing();
+			m_currentShaders = shaders;
+			m_currentShaders->use();
+		}
 	}
 
 	void Renderer::setTexture(const Texture* texture)

@@ -1,6 +1,5 @@
 #include <Dunjun/Math/Rectangle.hpp>
-
-#include <cmath>
+#include <Dunjun/Math/Functions.hpp>
 
 namespace Dunjun
 {

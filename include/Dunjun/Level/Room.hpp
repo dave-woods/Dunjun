@@ -74,7 +74,7 @@ namespace Dunjun
 		const Room::Size size;
 		const Material* material;
 		
-		void generate();
+		void generate(bool northDoor, bool eastDoor, bool southDoor, bool westDoor);
 		
 	protected:
 		Mesh* m_mesh;

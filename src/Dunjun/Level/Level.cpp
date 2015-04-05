@@ -9,9 +9,9 @@ namespace Dunjun
 
 	void Level::generate()
 	{
-		placeRooms(-1);
+		//placeRooms(-1);
 		placeRooms(0);
-		placeRooms(1);
+		//placeRooms(1);
 	}
 
 	void Level::placeRooms(int floor)
@@ -24,29 +24,32 @@ namespace Dunjun
 
 		//m_random.setSeed(1);
 
-		const int w = 8;
-		const int h = 8;
-		const Room::Size size(8, 8, 3);
+		const int gridWidth = 100;
+		const int gridHeight = 100;
+		const Room::Size size(9, 9, 3);
 
-		bool grid[w][h] = { { false } };
+		//transform.position.x = -gridWidth * size.x / 2;
+		//transform.position.z = -gridHeight * size.y / 2;
 
-		grid[w / 2][h / 2] = true;
+		bool grid[gridWidth][gridHeight] = { { false } };
 
-		for (int r = 0; r < 2; r++)
+		grid[gridWidth / 2][gridHeight / 2] = true;
+
+		for (int randomWalks = 0; randomWalks < 4; randomWalks++)
 		{
 
-			int x = w / 2;
-			int y = h / 2;
+			int x = gridWidth / 2;
+			int y = gridHeight / 2;
 
-			int prevX = w / 2;
-			int prevY = h / 2;
+			int prevX = gridWidth / 2;
+			int prevY = gridHeight / 2;
 
-			for (int n = 0; n < 6; n++)
+			for (int n = 0; n < 10; n++)
 			{
-				int d = m_random.getInt(0, 3);
-				for (int l = 0; l < 4; l++)
+				int direction = m_random.getInt(0, 3);
+				for (int l = 0; l < 3; l++)
 				{
-					switch (d)
+					switch (direction)
 					{
 					case 0: // right
 						x++;
@@ -62,14 +65,8 @@ namespace Dunjun
 						break;
 					}
 
-					if (x > w - 1)
-						x = w - 1;
-					if (y > h - 1)
-						y = h - 1;
-					if (x < 0)
-						x = 0;
-					if (y < 0)
-						y = 0;
+					x = Math::clamp(x, 0, gridWidth - 1);
+					y = Math::clamp(y, 0, gridHeight - 1);
 
 					if (grid[x][y])
 					{
@@ -86,12 +83,12 @@ namespace Dunjun
 		}
 
 		{
-			for (int shoot = 0; shoot < 5; shoot++)
+			for (int shoot = 0; shoot < 10; shoot++)
 			{
 				while (true)
 				{
-					int x = m_random.getInt(0, w - 1);
-					int y = m_random.getInt(0, h - 1);
+					int x = m_random.getInt(0, gridWidth - 1);
+					int y = m_random.getInt(0, gridHeight - 1);
 
 					if (grid[x][y])
 					{
@@ -113,14 +110,8 @@ namespace Dunjun
 							break;
 						}
 
-						if (x > w - 1)
-							x = w - 1;
-						if (y > h - 1)
-							y = h - 1;
-						if (x < 0)
-							x = 0;
-						if (y < 0)
-							y = 0;
+						x = Math::clamp(x, 0, gridWidth - 1);
+						y = Math::clamp(y, 0, gridHeight - 1);
 
 						if (grid[x][y])
 							continue;
@@ -132,20 +123,48 @@ namespace Dunjun
 			}
 		}
 
-		for (int i = 0; i < w; i++)
+		for (int i = 0; i < gridWidth; i++)
 		{
-			for (int j = 0; j < h; j++)
+			for (int j = 0; j < gridHeight; j++)
 			{
 				if (!grid[i][j])
 					continue;
 
 				auto room = make_unique<Room>(m_random, size);
-				room->transform.position.x = size.x * i;
+				room->transform.position.x = size.x * (i - gridWidth / 2.0f);
 				room->transform.position.y = size.z * floor;
-				room->transform.position.z = size.y * j;
+				room->transform.position.z = size.y * (j - gridHeight / 2.0f);
 
 				room->material = this->material;
-				room->generate();
+				
+				bool northDoor = false;
+				bool eastDoor = false;
+				bool southDoor = false;
+				bool westDoor = false;
+
+
+				if (i != 0)
+				{
+					if (grid[i - 1][j])
+						westDoor = true;
+				}
+				if (i != gridWidth - 1)
+				{
+					if (grid[i + 1][j])
+						eastDoor = true;
+				}
+				if (j != 0)
+				{
+					if (grid[i][j - 1])
+						northDoor = true;
+				}
+				if (j != gridHeight - 1)
+				{
+					if (grid[i][j + 1])
+						southDoor = true;
+				}
+
+				room->generate(northDoor, eastDoor, southDoor, westDoor);
 
 				attachChild(std::move(room));
 			}

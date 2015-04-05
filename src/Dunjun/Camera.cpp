@@ -4,7 +4,6 @@
 
 namespace Dunjun
 {
-
 	Camera::Camera()
 		: transform()
 		, fieldOfView(Degree(50))
@@ -17,7 +16,7 @@ namespace Dunjun
 
 	void Camera::lookAt(const Vector3& position, const Vector3& up)
 	{
-		transform.orientation = conjugate(Dunjun::lookAt<Quaternion>(transform.position, position, up));
+		transform.orientation = conjugate(Math::lookAt<Quaternion>(transform.position, position, up));
 	}
 	void Camera::offsetOrientation(const Radian& yaw, const Radian& pitch)
 	{
@@ -64,16 +63,16 @@ namespace Dunjun
 		
 		if (projectionType == ProjectionType::Perspective)
 		{
-			m = perspective(fieldOfView, viewportAspectRatio, nearPlane, farPlane);
+			m = Math::perspective(fieldOfView, viewportAspectRatio, nearPlane, farPlane);
 		}
 		else if (projectionType == ProjectionType::InfinitePerspective)
 		{
-			m = infinitePerspective(fieldOfView, viewportAspectRatio, nearPlane);
+			m = Math::infinitePerspective(fieldOfView, viewportAspectRatio, nearPlane);
 		}
 		else if (projectionType == ProjectionType::Orthographic)
 		{
 			f32 distance = 0.5 * (farPlane - nearPlane);
-			m = ortho(-orthoScale * viewportAspectRatio, orthoScale * viewportAspectRatio,
+			m = Math::ortho(-orthoScale * viewportAspectRatio, orthoScale * viewportAspectRatio,
 				-orthoScale, orthoScale, -distance, distance);
 		}
 
@@ -83,7 +82,7 @@ namespace Dunjun
 	{
 		Matrix4 m;
 		
-		m = scale(Vector3(1) / transform.scale) * quaternionToMatrix4(conjugate(transform.orientation)) * translate(-transform.position);
+		m = Math::scale(Vector3(1) / transform.scale) * quaternionToMatrix4(conjugate(transform.orientation)) * Math::translate(-transform.position);
 
 		return m;	
 	}

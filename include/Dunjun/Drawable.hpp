@@ -1,11 +1,11 @@
 #ifndef DUNJUN_DRAWABLE_HPP
 #define DUNJUN_DRAWABLE_HPP
 
-#include <Dunjun/Transform.hpp>
-
 namespace Dunjun
 {
 	class Renderer;
+	class Transform;
+
 	class Drawable
 	{
 	protected:

@@ -14,10 +14,8 @@
 #include <bitset>
 #include <memory>
 #include <string>
-#include <vector>
 #include <deque>
-#include <map>
-#include <typeindex>
+#include <algorithm>
 
 namespace Dunjun
 {
@@ -27,7 +25,7 @@ namespace Dunjun
 	{
 		inline ComponentId getUniqueComponentId()
 		{
-			LOCAL_INTERNAL ComponentId lastId = 0;
+			LOCAL_PERSIST ComponentId lastId = 0;
 			return lastId++;
 		}
 	}
@@ -38,7 +36,7 @@ namespace Dunjun
 		static_assert(std::is_base_of<NodeComponent, ComponentType>::value,
 			"ComponentType must inherit from NodeComponent.");
 
-		LOCAL_INTERNAL ComponentId typeId = Impl::getUniqueComponentId();
+		LOCAL_PERSIST ComponentId typeId = Impl::getUniqueComponentId();
 		return typeId;
 	}
 
@@ -46,7 +44,6 @@ namespace Dunjun
 	{
 	public:
 		using UPtr = std::unique_ptr<SceneNode>;
-		using GroupedComponentMap = std::map < std::type_index, std::vector<NodeComponent::UPtr>>;
 
 		GLOBAL const usize MaxComponents = 32;
 		using ComponentBitset = std::bitset<MaxComponents>;
@@ -67,7 +64,8 @@ namespace Dunjun
 		void onStart();
 		void update(f32 dt);
 
-		const usize id;
+		using ID = u64;
+		const ID id;
 		std::string name;
 		Transform transform;
 		ReadOnly<SceneNode*, SceneNode> parent;
@@ -120,7 +118,7 @@ namespace Dunjun
 		std::deque<UPtr> m_children;
 		//GroupedComponentMap m_groupedComponents;
 		
-		std::vector<NodeComponent::UPtr> m_components;
+		std::deque<NodeComponent::UPtr> m_components;
 		ComponentArray m_componentArray;
 		ComponentBitset m_componentBitset;
 	};

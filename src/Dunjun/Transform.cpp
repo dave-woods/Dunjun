@@ -48,7 +48,7 @@ namespace Dunjun
 
 	Matrix4 transformMatrix4(const Transform& t)
 	{
-		return translate(t.position) * quaternionToMatrix4(t.orientation) * scale(t.scale);
+		return Math::translate(t.position) * quaternionToMatrix4(t.orientation) * Math::scale(t.scale);
 	}
 
 }

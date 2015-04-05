@@ -15,12 +15,17 @@ private:
 	friend Super;
 
 	ReadOnly()
-		:data()
+		:data{}
 	{
 	}
 
 	ReadOnly(const T& t)
-		:data(t)
+		:data{ t }
+	{
+	}
+
+	ReadOnly(const T&& t)
+		:data{ std::move(t) }
 	{
 	}
 
@@ -31,6 +36,15 @@ private:
 	}
 
 	T* operator&() { return &data; }
+
+	template <class U>
+	U& operator*()
+	{
+		return *data;
+	}
+	
+	bool operator==(const T& t) const { return data == t; }
+	bool operator!=(const T& t) const { return !operator==(t); }
 
 	T data;
 };

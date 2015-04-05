@@ -5,7 +5,6 @@
 #include <Dunjun/Math/Vector2.hpp>
 
 #include <iostream>
-#include <cmath>
 
 namespace Dunjun
 {

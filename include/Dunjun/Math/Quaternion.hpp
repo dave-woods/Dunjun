@@ -38,9 +38,6 @@ struct Quaternion
 	f32 scalar() const;
 	f32& scalar();
 
-	f32 lengthSquared() const;
-	f32 length() const;
-
 	union
 	{
 		f32 data[4];
@@ -52,6 +49,9 @@ inline Quaternion operator*(f32 s, const Quaternion& q) { return q * s; }
 
 f32 dot(const Quaternion& a, const Quaternion& b);
 Quaternion cross(const Quaternion& a, const Quaternion& b);
+
+f32 lengthSquared(const Quaternion& q);
+f32 length(const Quaternion& q);
 
 Quaternion normalize(const Quaternion& q);
 Quaternion conjugate(const Quaternion& q);
@@ -89,6 +89,12 @@ Radian roll(const Quaternion& q);
 Radian pitch(const Quaternion& q);
 Radian yaw(const Quaternion& q);
 EulerAngles quaternionToEulerAngles(const Quaternion& q);
+
+inline Quaternion eulerAnglesToQuaternion(const EulerAngles& e, const Vector3& xAxis = { 1, 0, 0 }, const Vector3& yAxis = { 0, 1, 0 }, const Vector3& zAxis = { 0, 0, 1 });
+inline Quaternion eulerAnglesToQuaternion(const Radian& pitch, const Radian& yaw, const Radian& roll, const Vector3& xAxis = { 1, 0, 0 }, const Vector3& yAxis = { 0, 1, 0 }, const Vector3& zAxis = { 0, 0, 1 })
+{
+	return eulerAnglesToQuaternion({ pitch, yaw, roll }, xAxis, yAxis, zAxis);
+}
 
 Matrix4 quaternionToMatrix4(const Quaternion& q);
 Quaternion matrix4ToQuaternion(const Matrix4& m);

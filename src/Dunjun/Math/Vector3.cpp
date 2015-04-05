@@ -1,4 +1,5 @@
 #include <Dunjun/Math/Vector3.hpp>
+#include <Dunjun/Math/Functions.hpp>
 
 namespace Dunjun
 {
@@ -141,7 +142,7 @@ namespace Dunjun
 
 	f32 lengthSquared(const Vector3& a) { return dot(a, a); }
 
-	f32 length(const Vector3& a) { return std::sqrt(lengthSquared(a)); }
+	f32 length(const Vector3& a) { return Math::sqrt(lengthSquared(a)); }
 
 	Vector3 normalize(const Vector3& a) { return a * (1.0f / length(a)); }
 
