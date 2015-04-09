@@ -14,13 +14,16 @@ namespace Dunjun
 		Vector3 position;
 		Vector2 texCoord;
 		Color color;
+		Vector3 normal;
 
 		Vertex(const Vector3& position = { 0, 0, 0 },
 			const Vector2& texCoord = { 0, 0 },
-			const Color& color = { { 0xFF, 0xFF, 0xFF, 0xFF } })
+			const Color& color = { { 0xFF, 0xFF, 0xFF, 0xFF } },
+			const Vector3& normal = { 0, 0, 0 })
 			: position(position)
 			, texCoord(texCoord)
 			, color(color)
+			, normal(normal)
 		{
 		}
 	};
@@ -36,9 +39,10 @@ namespace Dunjun
 
 		inline VertexArray& append(const Vector3& position = { 0, 0, 0 },
 			const Vector2& texCoord = { 0, 0 },
-			const Color& color = { { 0xFF, 0xFF, 0xFF, 0xFF } })
+			const Color& color = { { 0xFF, 0xFF, 0xFF, 0xFF } },
+			const Vector3& normal = { 0, 0, 0 })
 		{
-			return append(Vertex(position, texCoord, color));
+			return append(Vertex(position, texCoord, color, normal));
 			
 		}
 

@@ -136,6 +136,7 @@ namespace Dunjun
 			}
 		}
 
+		m_meshData.generateNormals();
 		m_mesh->addData(m_meshData);
 
 		//m_mesh->generate();

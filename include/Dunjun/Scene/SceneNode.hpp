@@ -5,8 +5,7 @@
 #include <Dunjun/ReadOnly.hpp>
 #include <Dunjun/Transform.hpp>
 #include <Dunjun/NonCopyable.hpp>
-#include <Dunjun/Renderer.hpp>
-#include <Dunjun/Drawable.hpp>
+#include <Dunjun/Scene/SceneRenderer.hpp>
 
 #include <Dunjun/Scene/NodeComponent.hpp>
 
@@ -40,7 +39,7 @@ namespace Dunjun
 		return typeId;
 	}
 
-	class SceneNode : public Drawable, private NonCopyable
+	class SceneNode : private NonCopyable
 	{
 	public:
 		using UPtr = std::unique_ptr<SceneNode>;
@@ -103,7 +102,7 @@ namespace Dunjun
 		}
 
 	protected:
-		friend class Renderer;
+		friend class SceneRenderer;
 
 		virtual void onStartCurrent();
 		void onStartChildren();
@@ -111,9 +110,9 @@ namespace Dunjun
 		virtual void updateCurrent(f32 dt);
 		void updateChildren(f32 dt);
 
-		void draw(Renderer& renderer, Transform t = Transform()) const;
-		virtual void drawCurrent(Renderer& renderer, Transform t) const;
-		void drawChildren(Renderer& renderer, Transform t) const;
+		void draw(SceneRenderer& renderer, Transform t = Transform()) const;
+		virtual void drawCurrent(SceneRenderer& renderer, Transform t) const;
+		void drawChildren(SceneRenderer& renderer, Transform t) const;
 
 		std::deque<UPtr> m_children;
 		//GroupedComponentMap m_groupedComponents;

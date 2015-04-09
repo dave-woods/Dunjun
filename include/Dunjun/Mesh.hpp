@@ -9,12 +9,13 @@
 
 namespace Dunjun
 {
-	class Renderer;
+	class SceneRenderer;
 	enum class AttribLocation : u32
 	{
 		Position = 0,
 		TexCoord = 1,
 		Color = 2,
+		Normal = 3,
 	};
 
 class Mesh
@@ -44,6 +45,8 @@ public:
 
 			return *this;
 		}
+
+		void generateNormals();
 	};
 
 	Mesh();
@@ -61,7 +64,7 @@ public:
 	}
 
 private:
-	friend class Renderer;
+	friend class SceneRenderer;
 	
 	void draw() const;
 

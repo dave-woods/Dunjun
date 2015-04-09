@@ -9,9 +9,9 @@ namespace Dunjun
 
 	void Level::generate()
 	{
-		//placeRooms(-1);
+		// placeRooms(-1);
 		placeRooms(0);
-		//placeRooms(1);
+		// placeRooms(1);
 	}
 
 	void Level::placeRooms(int floor)

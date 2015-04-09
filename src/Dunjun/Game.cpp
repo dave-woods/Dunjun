@@ -13,7 +13,6 @@
 #include <Dunjun/ModelAsset.hpp>
 
 #include <Dunjun/Scene.hpp>
-#include <Dunjun/Renderer.hpp>
 
 #include <Dunjun/Level/Level.hpp>
 #include <Dunjun/Level/Room.hpp>
@@ -36,7 +35,7 @@ struct ModelInstance
 
 namespace
 {
-	GLOBAL const char* default_windowTitle = "Dunjun v0.0.37";
+	GLOBAL const char* default_windowTitle = "Dunjun v0.0.57";
 	GLOBAL const f32 TimeStep = (1.0f / 60.0f);
 	GLOBAL bool g_running = true;
 } // anonymous
@@ -51,12 +50,14 @@ GLOBAL Camera* g_currentCamera = &g_cameraPlayer;
 GLOBAL SceneNode g_rootNode;
 GLOBAL SceneNode* g_player;
 
-GLOBAL Renderer g_renderer;
+GLOBAL SceneRenderer g_renderer;
 
 GLOBAL std::map<std::string, Material> g_materials;
 GLOBAL std::map<std::string, Mesh*> g_meshes;
 
 GLOBAL Level* g_level;
+
+GLOBAL PointLight g_light;
 
 namespace Game
 {
@@ -100,6 +101,7 @@ namespace Game
 		g_defaultShader->bindAttribLocation((u32)AttribLocation::Position, "a_position");
 		g_defaultShader->bindAttribLocation((u32)AttribLocation::TexCoord, "a_texCoord");
 		g_defaultShader->bindAttribLocation((u32)AttribLocation::Color, "a_color");
+		g_defaultShader->bindAttribLocation((u32)AttribLocation::Normal, "a_normal");
 
 		if (!g_defaultShader->link())
 			throw std::runtime_error(g_defaultShader->errorLog);
@@ -136,6 +138,7 @@ namespace Game
 			.append({ -0.5f, +0.5f, 0.0f }, { 0.0f, 1.0f });
 
 		meshData.addFace(0, 1, 2).addFace(2, 3, 0);
+		meshData.generateNormals();
 
 		g_meshes["sprite"] = new Mesh(meshData);
 
@@ -182,6 +185,9 @@ namespace Game
 			g_rootNode.attachChild(std::move(level));
 		}
 
+		g_light.position = { 4, 1.5, 4 };
+		g_light.intensities = { 10, 10, 10 };
+
 		g_cameraPlayer.transform.position = { 3, 2, 3 };
 		g_cameraPlayer.transform.orientation = angleAxis(Degree(45), { 0, 1, 0 }) * angleAxis(Degree(-30), { 1, 0, 0 });
 
@@ -189,11 +195,8 @@ namespace Game
 		g_cameraPlayer.orthoScale = 8;
 
 		g_cameraPlayer.projectionType = ProjectionType::Perspective;
-
 		g_cameraWorld = g_cameraPlayer;
-
 		g_cameraPlayer.projectionType = ProjectionType::Orthographic;
-
 		g_currentCamera = &g_cameraWorld;
 		
 		g_rootNode.onStart();
@@ -397,6 +400,10 @@ namespace Game
 			}
 		}
 
+		g_light.position.x = 4.0f + 1.0f * Math::cos(1.0f * Radian(Input::getTime()));
+		g_light.position.y = 0.5f;
+		g_light.position.z = 4.0f + 1.0f * Math::sin(1.0f * Radian(Input::getTime()));
+
 		// Camera lag in orthographic view
 		g_cameraPlayer.transform.position.x = Math::lerp(g_cameraPlayer.transform.position.x, g_player->transform.position.x, 10.0f * dt);
 		g_cameraPlayer.transform.position.z = Math::lerp(g_cameraPlayer.transform.position.z, g_player->transform.position.z, 10.0f * dt);
@@ -460,8 +467,10 @@ namespace Game
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		g_renderer.reset();
-		g_renderer.setCamera(*g_currentCamera);
+		g_renderer.currentCamera = g_currentCamera;
 		g_renderer.draw(g_rootNode);
+		g_renderer.addPointLight(&g_light);
+		g_renderer.renderAll();
 
 		Window::swapBuffers();
 	}
