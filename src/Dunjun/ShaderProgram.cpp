@@ -317,5 +317,17 @@ namespace Dunjun
 		setUniform(name + ".scale", t.scale);
 	}
 
+	void ShaderProgram::setUniform(const std::string& name, const Color& c) const
+	{
+		checkInUse();
+
+		f32 r, g, b, a;
+		r = c.r / 255;
+		g = c.g / 255;
+		b = c.b / 255;
+		a = c.a / 255;
+
+		setUniform(name, r, g, b, a);
+	}
 
 } // namespace Dunjun
