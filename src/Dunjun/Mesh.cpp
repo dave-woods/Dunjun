@@ -51,9 +51,9 @@ namespace Dunjun
 	void Mesh::addData(const Data& data)
 	{
 		m_data = data;
-		m_generated = false;
 		m_drawType = data.drawType;
 		m_drawCount = data.indices.size();
+		m_generated = false;
 	}
 
 	void Mesh::generate() const
@@ -86,7 +86,7 @@ namespace Dunjun
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 
-		glVertexAttribPointer((u32)AttribLocation::Position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)0);
+		glVertexAttribPointer((u32)AttribLocation::Position, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(0));
 		glVertexAttribPointer((u32)AttribLocation::TexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector3)));
 		glVertexAttribPointer((u32)AttribLocation::Color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector3) + sizeof(Vector2)));
 		glVertexAttribPointer((u32)AttribLocation::Normal, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)(sizeof(Vector3) + sizeof(Vector2) + sizeof(Color)));

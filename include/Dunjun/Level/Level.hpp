@@ -19,7 +19,7 @@ public:
 	void generate();
 	
 	Transform transform;
-	Material* material;
+	Material material;
 	std::vector<Room*> rooms;
 
 private:

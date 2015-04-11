@@ -7,13 +7,12 @@ namespace Dunjun
 	Room::Room(Random& random, const Room::Size& size)
 		: SceneNode()
 		, size(size)
-		, material(nullptr)
+		, material()
 		, m_mesh(nullptr)
 		, m_random(random)
 		, m_generated(false)
 		, m_meshData()
 	{
-		
 	}
 
 	Room::~Room()
@@ -29,12 +28,11 @@ namespace Dunjun
 		if (!m_mesh)
 			m_mesh = new Mesh();
 
-		std::vector<std::vector<TileId>> mapGrid(
-			size.x, std::vector<TileId>(size.y));
+		std::vector<std::vector<TileId>> mapGrid(size.x, std::vector<TileId>(size.y));
 
+		TileId blankTile = { -1, -1 };
 		TileId lightWoodTile = { 0, 11 };
 		TileId darkWoodTile = { 0, 10 };
-		TileId blankTile = { -1, -1 };
 		RandomTileSet stoneTiles;
 		for (int i = 1; i < 3; i++)
 			stoneTiles.emplace_back(i, 15);

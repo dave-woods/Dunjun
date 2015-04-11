@@ -12,7 +12,7 @@ namespace Dunjun
 	class MeshRenderer : public NodeComponent
 	{
 	public:
-		explicit MeshRenderer(const Mesh* mesh, const Material* material)
+		explicit MeshRenderer(const Mesh* mesh, Material material)
 			: mesh(mesh)
 			, material(material)
 		{
@@ -27,13 +27,13 @@ namespace Dunjun
 
 		virtual void draw(SceneRenderer& renderer, Transform t) const override
 		{
-			if (!material || !mesh)
+			if (!material.shaders || !mesh)
 				return;
 
 			renderer.addModelInstance(*this, t);
 		}
 	
-		const Material* material;
+		Material material;
 		const Mesh* mesh;
 	};
 }

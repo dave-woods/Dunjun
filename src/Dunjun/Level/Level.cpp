@@ -9,16 +9,16 @@ namespace Dunjun
 
 	void Level::generate()
 	{
-		// placeRooms(-1);
+		//placeRooms(-1);
 		placeRooms(0);
-		// placeRooms(1);
+		//placeRooms(1);
 	}
 
 	void Level::placeRooms(int floor)
 	{
-		if (!material)
+		if (!material.shaders)
 		{
-			std::cout << "Level::placeRooms material == nullptr" << std::endl;
+			std::cout << "Level::placeRooms material.shaders == nullptr" << std::endl;
 			return;
 		}
 

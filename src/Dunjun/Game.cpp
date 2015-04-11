@@ -15,9 +15,6 @@
 #include <Dunjun/Scene.hpp>
 
 #include <Dunjun/Level/Level.hpp>
-#include <Dunjun/Level/Room.hpp>
-
-#include <GLFW/glfw3.h>
 
 #include <fstream>
 #include <iostream>
@@ -40,12 +37,12 @@ namespace
 	GLOBAL bool g_running = true;
 } // anonymous
 
-GLOBAL ShaderProgram* g_defaultShader;
-GLOBAL ModelAsset g_sprite;
-
 GLOBAL Camera g_cameraPlayer;
 GLOBAL Camera g_cameraWorld;
 GLOBAL Camera* g_currentCamera = &g_cameraPlayer;
+
+GLOBAL ShaderProgram* g_defaultShader;
+GLOBAL ModelAsset g_sprite;
 
 GLOBAL SceneNode g_rootNode;
 GLOBAL SceneNode* g_player;
@@ -111,20 +108,20 @@ namespace Game
 	INTERNAL void loadMaterials()
 	{
 		g_materials["character"].shaders = g_defaultShader;
-		g_materials["character"].texture = new Texture();
-		g_materials["character"].texture->loadFromFile("data/textures/rudy.png", TextureFilter::Nearest);
+		g_materials["character"].diffuseMap = new Texture();
+		g_materials["character"].diffuseMap->loadFromFile("data/textures/rudy.png", TextureFilter::Nearest);
 
 		g_materials["default"].shaders = g_defaultShader;
-		g_materials["default"].texture = new Texture();
-		g_materials["default"].texture->loadFromFile("data/textures/default.png");
+		g_materials["default"].diffuseMap = new Texture();
+		g_materials["default"].diffuseMap->loadFromFile("data/textures/default.png");
 
 		g_materials["stone"].shaders = g_defaultShader;
-		g_materials["stone"].texture = new Texture();
-		g_materials["stone"].texture->loadFromFile("data/textures/stone.png");
+		g_materials["stone"].diffuseMap = new Texture();
+		g_materials["stone"].diffuseMap->loadFromFile("data/textures/stone.png");
 
 		g_materials["terrain"].shaders = g_defaultShader;
-		g_materials["terrain"].texture = new Texture();
-		g_materials["terrain"].texture->loadFromFile("data/textures/terrain.png", TextureFilter::Nearest);
+		g_materials["terrain"].diffuseMap = new Texture();
+		g_materials["terrain"].diffuseMap->loadFromFile("data/textures/terrain.png", TextureFilter::Nearest);
 	}
 
 	INTERNAL void loadSpriteAsset()
@@ -142,7 +139,7 @@ namespace Game
 
 		g_meshes["sprite"] = new Mesh(meshData);
 
-		g_sprite.material = &g_materials["character"];
+		g_sprite.material = g_materials["character"];
 		g_sprite.mesh = g_meshes["sprite"];
 	}
 
@@ -162,12 +159,8 @@ namespace Game
 			player->name = "player";
 			player->transform.position = { 4, 0.5, 4 };
 			player->transform.orientation = angleAxis(Degree(45), { 0, 1, 0 }) * angleAxis(Degree(-30), { 1, 0, 0 });
-
-
 			player->addComponent<MeshRenderer>(g_sprite);
 			//player->addComponent<FaceCamera>(g_cameraWorld);
-			
-			//player->visible = false;
 
 			g_player = player.get();
 
@@ -178,7 +171,7 @@ namespace Game
 		{
 			auto level = make_unique<Level>();
 
-			level->material = &g_materials["terrain"];
+			level->material = g_materials["terrain"];
 			level->generate();
 
 			g_level = level.get();
@@ -194,7 +187,7 @@ namespace Game
 		g_cameraPlayer.fieldOfView = Degree(50.0f);
 		g_cameraPlayer.orthoScale = 8;
 
-		g_cameraPlayer.projectionType = ProjectionType::Perspective;
+		//g_cameraPlayer.projectionType = ProjectionType::Perspective;
 		g_cameraWorld = g_cameraPlayer;
 		g_cameraPlayer.projectionType = ProjectionType::Orthographic;
 		g_currentCamera = &g_cameraWorld;
@@ -427,7 +420,7 @@ namespace Game
 		}
 
 // Culling (COULD BE OPTIMISED)
-#if 1
+#if 0
 		for (auto& room : g_level->rooms)
 		{
 			Vector3 roomPos = room->transform.position;

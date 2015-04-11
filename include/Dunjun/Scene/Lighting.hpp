@@ -14,8 +14,8 @@ namespace Dunjun
 
 	struct PointLight
 	{
-		Vector3 position = Vector3(0.0f);
-		Vector3 intensities = Vector3(1.0f);
+		Vector3 position = { 0, 0, 0 };
+		Vector3 intensities = Vector3(1);
 		Vector3 ambience = Vector3(0.01f);
 
 		Attenuation attenuation;

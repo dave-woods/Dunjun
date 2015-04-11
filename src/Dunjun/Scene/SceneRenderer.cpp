@@ -58,27 +58,29 @@ namespace Dunjun
 		{
 			const auto& matA = a.meshRenderer->material;
 			const auto& matB = b.meshRenderer->material;
-			if (matA->shaders == matB->shaders)
-				return matA->texture < matB->texture;
+			if (matA.shaders == matB.shaders)
+				return matA.diffuseMap < matB.diffuseMap;
 			else
-				return matA->shaders < matB->shaders;
+				return matA.shaders < matB.shaders;
 		});
 		
 		for (const auto& inst : m_modelInstances)
 		{
-			if (setShaders(inst.meshRenderer->material->shaders))
+			if (setShaders(inst.meshRenderer->material.shaders))
 			{
 				m_currentShaders->setUniform("u_camera", currentCamera->getMatrix());
 				m_currentShaders->setUniform("u_cameraPosition", currentCamera->transform.position);
-				m_currentShaders->setUniform("u_tex", (Dunjun::u32)0);
+				m_currentShaders->setUniform("u_tex", (u32)0);
+
 				m_currentShaders->setUniform("u_light.position", m_pointLights[0]->position); // assumes there is one light
 				m_currentShaders->setUniform("u_light.intensities", m_pointLights[0]->intensities);
 				m_currentShaders->setUniform("u_light.ambience", m_pointLights[0]->ambience);
+			
 				m_currentShaders->setUniform("u_light.attenuation.constant", m_pointLights[0]->attenuation.constant);
 				m_currentShaders->setUniform("u_light.attenuation.linear", m_pointLights[0]->attenuation.linear);
 				m_currentShaders->setUniform("u_light.attenuation.quadratic", m_pointLights[0]->attenuation.quadratic);
 			}
-			setTexture(inst.meshRenderer->material->texture);
+			setTexture(inst.meshRenderer->material.diffuseMap, 0);
 			m_currentShaders->setUniform("u_transform", inst.transform);
 			draw(inst.meshRenderer->mesh);
 		}
@@ -97,13 +99,13 @@ namespace Dunjun
 		return false;
 	}
 
-	bool SceneRenderer::setTexture(const Texture* texture)
+	bool SceneRenderer::setTexture(const Texture* texture, GLuint position)
 	{
 		if (texture != m_currentTexture)
 		{
 			m_currentTexture = texture;
 
-			Texture::bind(m_currentTexture, 0);
+			Texture::bind(m_currentTexture, position);
 			return true;
 		}
 		return false;
