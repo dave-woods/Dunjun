@@ -27,7 +27,7 @@ namespace Dunjun
 			f32 i = brightness * std::max(color.r, std::max(color.g, color.b));
 			f32 r = -attenuation.linear + Math::sqrt(attenuation.linear * attenuation.linear - 4.0f * attenuation.quadratic * (attenuation.constant - i));
 			r /= (2.0f * attenuation.quadratic);
-			//r = 16.0f; // ring of darkness but not cylindrical i.e. outside the ring is lit again
+			//r = 4.0f; // ring of darkness but not cylindrical i.e. outside the ring is lit again
 			range = r;
 		}
 	};

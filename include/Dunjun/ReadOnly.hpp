@@ -11,6 +11,9 @@ public:
 	{
 		return data;
 	}
+
+	const T* operator&() const { return &data; }
+
 private:
 	friend Super;
 

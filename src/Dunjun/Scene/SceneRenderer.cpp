@@ -58,29 +58,29 @@ namespace Dunjun
 		{
 			const auto& matA = a.meshRenderer->material;
 			const auto& matB = b.meshRenderer->material;
-			if (matA.shaders == matB.shaders)
-				return matA.diffuseMap < matB.diffuseMap;
+			if (matA->shaders == matB->shaders)
+				return matA->diffuseMap < matB->diffuseMap;
 			else
-				return matA.shaders < matB.shaders;
+				return matA->shaders < matB->shaders;
 		});
 		
 		for (const auto& inst : m_modelInstances)
 		{
-			if (setShaders(inst.meshRenderer->material.shaders))
+			if (setShaders(inst.meshRenderer->material->shaders))
 			{
-				const Material& mat = inst.meshRenderer->material;
+				const Material* mat = inst.meshRenderer->material;
 
 				m_currentShaders->setUniform("u_camera", currentCamera->getMatrix());
 				m_currentShaders->setUniform("u_cameraPosition", currentCamera->transform.position);
 				
 				m_currentShaders->setUniform("u_material.diffuseMap", (u32)0);
-				m_currentShaders->setUniform("u_material.diffuseColor", mat.diffuseColor);
-				m_currentShaders->setUniform("u_material.specularColor", mat.specularColor);
-				m_currentShaders->setUniform("u_material.specularExponent", mat.specularExponent);
+				m_currentShaders->setUniform("u_material.diffuseColor", mat->diffuseColor);
+				m_currentShaders->setUniform("u_material.specularColor", mat->specularColor);
+				m_currentShaders->setUniform("u_material.specularExponent", mat->specularExponent);
 
 
 				const PointLight* light = m_pointLights[0];
-				std::cout << light->range << std::endl;
+				//std::cout << light->range << std::endl;
 				Vector3 lightIntensities;
 				lightIntensities.r = light->color.r / 255.0f;
 				lightIntensities.g = light->color.g / 255.0f;
@@ -96,7 +96,7 @@ namespace Dunjun
 				
 				m_currentShaders->setUniform("u_light.range", light->range);
 			}
-			setTexture(inst.meshRenderer->material.diffuseMap, 0);
+			setTexture(inst.meshRenderer->material->diffuseMap, 0);
 			m_currentShaders->setUniform("u_transform", inst.transform);
 			draw(inst.meshRenderer->mesh);
 		}

@@ -16,7 +16,12 @@ namespace Dunjun
 
 	void Level::placeRooms(int floor)
 	{
-		if (!material.shaders)
+		if (!material)
+		{
+			std::cout << "Level::placeRooms material == nullptr" << std::endl;
+			return;
+		}
+		else if (!material->shaders)
 		{
 			std::cout << "Level::placeRooms material.shaders == nullptr" << std::endl;
 			return;
@@ -130,7 +135,7 @@ namespace Dunjun
 				room->transform.position.y = size.z * (f32)floor;
 				room->transform.position.z = size.y * (j - gridHeight / 2.0f);
 
-				room->material = this->material;
+				room->material = material;
 				
 				bool northDoor = false;
 				bool eastDoor = false;

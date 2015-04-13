@@ -72,7 +72,7 @@ namespace Dunjun
 		virtual ~Room() override;
 
 		const Room::Size size;
-		Material material;
+		Material* material;
 		
 		void generate(bool northDoor, bool eastDoor, bool southDoor, bool westDoor);
 		

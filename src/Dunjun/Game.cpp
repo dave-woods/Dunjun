@@ -5,6 +5,8 @@
 #include <Dunjun/Window.hpp>
 #include <Dunjun/Input.hpp>
 
+#include <Dunjun/RenderTexture.hpp>
+
 #include <Dunjun/Clock.hpp>
 #include <Dunjun/TickCounter.hpp>
 
@@ -139,7 +141,7 @@ namespace Game
 
 		g_meshes["sprite"] = new Mesh(meshData);
 
-		g_sprite.material = g_materials["character"];
+		g_sprite.material = &g_materials["character"];
 		g_sprite.mesh = g_meshes["sprite"];
 	}
 
@@ -171,7 +173,7 @@ namespace Game
 		{
 			auto level = make_unique<Level>();
 
-			level->material = g_materials["terrain"];
+			level->material = &g_materials["terrain"];
 			level->generate();
 
 			g_level = level.get();
@@ -452,11 +454,24 @@ namespace Game
 
 	INTERNAL void render()
 	{
+		LOCAL_PERSIST RenderTexture* rt = new RenderTexture();
+		rt->create(64, 64, RenderTexture::ColorAndDepth);
+		rt->setActive(true);
 		{
-			Vector2 fbSize = Window::getFramebufferSize();
-			glViewport(0, 0, (GLsizei)fbSize.x, (GLsizei)fbSize.y);
+			glViewport(0, 0, rt->width, rt->height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			g_renderer.reset();
+			g_renderer.currentCamera = g_currentCamera;
+			g_renderer.draw(g_rootNode);
+			g_renderer.addPointLight(&g_light);
+			g_renderer.renderAll();
 		}
+		rt->setActive(false);
 
+		g_materials["character"].diffuseMap = &rt->colorTexture;
+
+		Vector2 fbSize = Window::getFramebufferSize();
+		glViewport(0, 0, (GLsizei)fbSize.x, (GLsizei)fbSize.y);
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
